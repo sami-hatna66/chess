@@ -7,10 +7,48 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		263B35B527A995DA0022A79C /* pieces.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 263B35B327A995DA0022A79C /* pieces.cpp */; };
+		263B35C927A9A2780022A79C /* blkKing.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = 263B35BB27A9999B0022A79C /* blkKing.png */; };
+		263B35CA27A9A2780022A79C /* blkRook.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = 263B35B727A9999B0022A79C /* blkRook.png */; };
+		263B35CB27A9A2780022A79C /* whtKnight.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = 263B35B827A9999B0022A79C /* whtKnight.png */; };
+		263B35CC27A9A2780022A79C /* whtPawn.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = 263B35B927A9999B0022A79C /* whtPawn.png */; };
+		263B35CD27A9A2780022A79C /* blkBishop.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = 263B35BA27A9999B0022A79C /* blkBishop.png */; };
+		263B35CE27A9A2780022A79C /* whtRook.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = 263B35BC27A9999B0022A79C /* whtRook.png */; };
+		263B35CF27A9A2780022A79C /* whtQueen.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = 263B35BD27A9999B0022A79C /* whtQueen.png */; };
+		263B35D027A9A2780022A79C /* blkKnight.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = 263B35BE27A9999B0022A79C /* blkKnight.png */; };
+		263B35D127A9A2780022A79C /* blkPawn.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = 263B35BF27A9999B0022A79C /* blkPawn.png */; };
+		263B35D227A9A2780022A79C /* whtBishop.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = 263B35C027A9999B0022A79C /* whtBishop.png */; };
+		263B35D327A9A2780022A79C /* whtKing.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = 263B35C127A9999B0022A79C /* whtKing.png */; };
+		263B35D427A9A2780022A79C /* blkQueen.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = 263B35C227A9999B0022A79C /* blkQueen.png */; };
 		26B480BF27A6E7E30041F56A /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 26B480BE27A6E7E30041F56A /* main.cpp */; };
+		26B480CD27A6F2080041F56A /* SDL2_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26B480CC27A6F2080041F56A /* SDL2_image.framework */; };
+		26B480CE27A6F2080041F56A /* SDL2_image.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 26B480CC27A6F2080041F56A /* SDL2_image.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		26B480D027A6F20B0041F56A /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26B480C627A6E80E0041F56A /* SDL2.framework */; };
+		26B480D127A6F20B0041F56A /* SDL2.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 26B480C627A6E80E0041F56A /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		263B35C727A9A2270022A79C /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+				263B35C927A9A2780022A79C /* blkKing.png in CopyFiles */,
+				263B35CA27A9A2780022A79C /* blkRook.png in CopyFiles */,
+				263B35CB27A9A2780022A79C /* whtKnight.png in CopyFiles */,
+				263B35CC27A9A2780022A79C /* whtPawn.png in CopyFiles */,
+				263B35CD27A9A2780022A79C /* blkBishop.png in CopyFiles */,
+				263B35CE27A9A2780022A79C /* whtRook.png in CopyFiles */,
+				263B35CF27A9A2780022A79C /* whtQueen.png in CopyFiles */,
+				263B35D027A9A2780022A79C /* blkKnight.png in CopyFiles */,
+				263B35D127A9A2780022A79C /* blkPawn.png in CopyFiles */,
+				263B35D227A9A2780022A79C /* whtBishop.png in CopyFiles */,
+				263B35D327A9A2780022A79C /* whtKing.png in CopyFiles */,
+				263B35D427A9A2780022A79C /* blkQueen.png in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		26B480B927A6E7E30041F56A /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -20,11 +58,41 @@
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
+		26B480CF27A6F2080041F56A /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				26B480CE27A6F2080041F56A /* SDL2_image.framework in Embed Frameworks */,
+				26B480D127A6F20B0041F56A /* SDL2.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		263B35B327A995DA0022A79C /* pieces.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = pieces.cpp; sourceTree = "<group>"; };
+		263B35B727A9999B0022A79C /* blkRook.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = blkRook.png; sourceTree = "<group>"; };
+		263B35B827A9999B0022A79C /* whtKnight.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whtKnight.png; sourceTree = "<group>"; };
+		263B35B927A9999B0022A79C /* whtPawn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whtPawn.png; sourceTree = "<group>"; };
+		263B35BA27A9999B0022A79C /* blkBishop.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = blkBishop.png; sourceTree = "<group>"; };
+		263B35BB27A9999B0022A79C /* blkKing.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = blkKing.png; sourceTree = "<group>"; };
+		263B35BC27A9999B0022A79C /* whtRook.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whtRook.png; sourceTree = "<group>"; };
+		263B35BD27A9999B0022A79C /* whtQueen.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whtQueen.png; sourceTree = "<group>"; };
+		263B35BE27A9999B0022A79C /* blkKnight.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = blkKnight.png; sourceTree = "<group>"; };
+		263B35BF27A9999B0022A79C /* blkPawn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = blkPawn.png; sourceTree = "<group>"; };
+		263B35C027A9999B0022A79C /* whtBishop.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whtBishop.png; sourceTree = "<group>"; };
+		263B35C127A9999B0022A79C /* whtKing.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whtKing.png; sourceTree = "<group>"; };
+		263B35C227A9999B0022A79C /* blkQueen.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = blkQueen.png; sourceTree = "<group>"; };
+		263B35C327A99E9E0022A79C /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		266F543E27A9A3A100D643B5 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		26B480BB27A6E7E30041F56A /* chess */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = chess; sourceTree = BUILT_PRODUCTS_DIR; };
 		26B480BE27A6E7E30041F56A /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		26B480C627A6E80E0041F56A /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = ../../../../Library/Frameworks/SDL2.framework; sourceTree = "<group>"; };
+		26B480CA27A6E8170041F56A /* chess.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = chess.entitlements; sourceTree = "<group>"; };
+		26B480CC27A6F2080041F56A /* SDL2_image.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_image.framework; path = ../../../../Library/Frameworks/SDL2_image.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,17 +100,39 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				26B480CD27A6F2080041F56A /* SDL2_image.framework in Frameworks */,
+				26B480D027A6F20B0041F56A /* SDL2.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		263B35B627A9999B0022A79C /* assets */ = {
+			isa = PBXGroup;
+			children = (
+				263B35BB27A9999B0022A79C /* blkKing.png */,
+				263B35B727A9999B0022A79C /* blkRook.png */,
+				263B35B827A9999B0022A79C /* whtKnight.png */,
+				263B35B927A9999B0022A79C /* whtPawn.png */,
+				263B35BA27A9999B0022A79C /* blkBishop.png */,
+				263B35BC27A9999B0022A79C /* whtRook.png */,
+				263B35BD27A9999B0022A79C /* whtQueen.png */,
+				263B35BE27A9999B0022A79C /* blkKnight.png */,
+				263B35BF27A9999B0022A79C /* blkPawn.png */,
+				263B35C027A9999B0022A79C /* whtBishop.png */,
+				263B35C127A9999B0022A79C /* whtKing.png */,
+				263B35C227A9999B0022A79C /* blkQueen.png */,
+			);
+			path = assets;
+			sourceTree = "<group>";
+		};
 		26B480B227A6E7E30041F56A = {
 			isa = PBXGroup;
 			children = (
 				26B480BD27A6E7E30041F56A /* chess */,
 				26B480BC27A6E7E30041F56A /* Products */,
+				26B480C527A6E80E0041F56A /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -57,9 +147,23 @@
 		26B480BD27A6E7E30041F56A /* chess */ = {
 			isa = PBXGroup;
 			children = (
+				26B480CA27A6E8170041F56A /* chess.entitlements */,
 				26B480BE27A6E7E30041F56A /* main.cpp */,
+				263B35B327A995DA0022A79C /* pieces.cpp */,
+				263B35B627A9999B0022A79C /* assets */,
+				266F543E27A9A3A100D643B5 /* README.md */,
 			);
 			path = chess;
+			sourceTree = "<group>";
+		};
+		26B480C527A6E80E0041F56A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				263B35C327A99E9E0022A79C /* CoreFoundation.framework */,
+				26B480CC27A6F2080041F56A /* SDL2_image.framework */,
+				26B480C627A6E80E0041F56A /* SDL2.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -72,6 +176,8 @@
 				26B480B727A6E7E30041F56A /* Sources */,
 				26B480B827A6E7E30041F56A /* Frameworks */,
 				26B480B927A6E7E30041F56A /* CopyFiles */,
+				26B480CF27A6F2080041F56A /* Embed Frameworks */,
+				263B35C727A9A2270022A79C /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -119,6 +225,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				263B35B527A995DA0022A79C /* pieces.cpp in Sources */,
 				26B480BF27A6E7E30041F56A /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -240,9 +347,19 @@
 		26B480C327A6E7E30041F56A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = chess/chess.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = R3WSLZUG53;
 				ENABLE_HARDENED_RUNTIME = YES;
+				EXCLUDED_ARCHS = arm64;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
+				HEADER_SEARCH_PATHS = (
+					/Library/Frameworks/SDL2.framework/Versions/A/Headers,
+					/Library/Frameworks/SDL2_image.framework/Headers,
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -250,9 +367,19 @@
 		26B480C427A6E7E30041F56A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = chess/chess.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = R3WSLZUG53;
 				ENABLE_HARDENED_RUNTIME = YES;
+				EXCLUDED_ARCHS = arm64;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
+				HEADER_SEARCH_PATHS = (
+					/Library/Frameworks/SDL2.framework/Versions/A/Headers,
+					/Library/Frameworks/SDL2_image.framework/Headers,
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
