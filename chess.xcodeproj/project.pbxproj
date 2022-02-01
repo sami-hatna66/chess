@@ -131,6 +131,7 @@
 		26B480B227A6E7E30041F56A = {
 			isa = PBXGroup;
 			children = (
+				266F543E27A9A3A100D643B5 /* README.md */,
 				26B480BD27A6E7E30041F56A /* chess */,
 				26B480BC27A6E7E30041F56A /* Products */,
 				26B480C527A6E80E0041F56A /* Frameworks */,
@@ -153,7 +154,6 @@
 				26FAD6D727A9BF6A007EB527 /* pieces.cpp */,
 				26FAD6D827A9BF6A007EB527 /* pieces.hpp */,
 				263B35B627A9999B0022A79C /* assets */,
-				266F543E27A9A3A100D643B5 /* README.md */,
 			);
 			path = chess;
 			sourceTree = "<group>";
