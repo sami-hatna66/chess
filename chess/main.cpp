@@ -16,6 +16,7 @@ void init();
 void draw();
 void close();
 void drawPiece();
+void pieceClicked(int x, int y);
 
 SDL_Window* win = NULL;
 SDL_Surface* surface = NULL;
@@ -26,6 +27,10 @@ void init() {
     IMG_Init(IMG_INIT_PNG);
     win = SDL_CreateWindow("Chess", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 400, 400, SDL_WINDOW_SHOWN);
 }
+
+int prevX = 0;
+int prevY = 0;
+bool highlightBoardMap[8][8] = {{0}};
 
 vector<Pawn> whitePawns = {
     Pawn(1, 0, false), Pawn(1, 1, false),
@@ -66,23 +71,43 @@ void drawPiece(const char* imgName, int xPos, int yPos) {
     SDL_RenderCopy(render, texture, NULL, &piecRect);
 }
 
+void pieceClicked(int x, int y) {
+    highlightBoardMap[prevY][prevX] = false;
+    if (prevY != y || prevX != x) {
+        highlightBoardMap[y][x] = true;
+    }
+    prevX = x; prevY = y;
+    draw();
+}
+
 void draw() {
     SDL_SetRenderDrawColor(render, 241, 221, 206, 255);
     SDL_RenderClear(render);
-    
     SDL_SetRenderDrawColor(render, 97, 61, 61, 255);
     bool isBlack = false;
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
             if (isBlack) {
-                SDL_Rect r;
-                r.x = j * 50; r.y = i * 50; r.w = 50; r.h = 50;
-                SDL_RenderFillRect(render, &r);
+                if (highlightBoardMap[i][j]) {
+                    SDL_SetRenderDrawColor(render, 0, 255, 0, 255);
+                }
+                else {
+                    SDL_SetRenderDrawColor(render, 97, 61, 61, 255);
+                }
                 isBlack = false;
             }
             else {
+                if (highlightBoardMap[i][j]) {
+                    SDL_SetRenderDrawColor(render, 0, 255, 0, 255);
+                }
+                else {
+                    SDL_SetRenderDrawColor(render, 241, 221, 206, 255);
+                }
                 isBlack = true;
             }
+            SDL_Rect r;
+            r.x = j * 50; r.y = i * 50; r.w = 50; r.h = 50;
+            SDL_RenderFillRect(render, &r);
         }
         isBlack = isBlack ? false : true;
     }
@@ -141,7 +166,7 @@ int main(int argc, const char * argv[]) {
                 isQuit = true;
             }
             else if (event.type == SDL_MOUSEBUTTONDOWN) {
-                cout << "(" << floor(event.motion.x / 50) << ", " << floor(event.motion.y / 50) << ")" << endl;
+                pieceClicked(floor(event.motion.x / 50), floor(event.motion.y / 50));
             }
         }
     }
