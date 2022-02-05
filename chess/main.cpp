@@ -28,56 +28,95 @@ void init() {
     win = SDL_CreateWindow("Chess", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 400, 400, SDL_WINDOW_SHOWN);
 }
 
-int prevX = 0;
-int prevY = 0;
+int prevX = -1;
+int prevY = -1;
 bool highlightBoardMap[8][8] = {{0}};
 
-vector<Pawn> whitePawns = {
-    Pawn(1, 0, false), Pawn(1, 1, false),
-    Pawn(1, 2, false), Pawn(1, 3, false),
-    Pawn(1, 4, false), Pawn(1, 5, false),
-    Pawn(1, 6, false), Pawn(1, 7, false),
+vector<ChessPiece> whitePawns = {
+    ChessPiece(1, 0, false, "pawn"), ChessPiece(1, 1, false, "pawn"),
+    ChessPiece(1, 2, false, "pawn"), ChessPiece(1, 3, false, "pawn"),
+    ChessPiece(1, 4, false, "pawn"), ChessPiece(1, 5, false, "pawn"),
+    ChessPiece(1, 6, false, "pawn"), ChessPiece(1, 7, false, "pawn"),
 };
 
-Rook whiteRook1 = Rook(0, 0, false);
-Rook whiteRook2 = Rook(0, 7, false);
-Knight whiteKnight1 = Knight(0, 1, false);
-Knight whiteKnight2 = Knight(0, 6, false);
-Bishop whiteBishop1 = Bishop(0, 2, false);
-Bishop whiteBishop2 = Bishop(0, 5, false);
-Queen whiteQueen = Queen(0, 3, false);
-King whiteKing = King(0, 4, false);
+ChessPiece whiteRook1 = ChessPiece(0, 0, false, "rook");
+ChessPiece whiteRook2 = ChessPiece(0, 7, false, "rook");
+ChessPiece whiteKnight1 = ChessPiece(0, 1, false, "knight");
+ChessPiece whiteKnight2 = ChessPiece(0, 6, false, "knight");
+ChessPiece whiteBishop1 = ChessPiece(0, 2, false, "bishop");
+ChessPiece whiteBishop2 = ChessPiece(0, 5, false, "bishop");
+ChessPiece whiteQueen = ChessPiece(0, 3, false, "queen");
+ChessPiece whiteKing = ChessPiece(0, 4, false, "king");
 
-vector<Pawn> blackPawns = {
-    Pawn(6, 0, true), Pawn(6, 1, true),
-    Pawn(6, 2, true), Pawn(6, 3, true),
-    Pawn(6, 4, true), Pawn(6, 5, true),
-    Pawn(6, 6, true), Pawn(6, 7, true),
+vector<ChessPiece> blackPawns = {
+    ChessPiece(6, 0, true, "pawn"), ChessPiece(6, 1, true, "pawn"),
+    ChessPiece(6, 2, true, "pawn"), ChessPiece(6, 3, true, "pawn"),
+    ChessPiece(6, 4, true, "pawn"), ChessPiece(6, 5, true, "pawn"),
+    ChessPiece(6, 6, true, "pawn"), ChessPiece(6, 7, true, "pawn"),
 };
 
-Rook blackRook1 = Rook(7, 0, true);
-Rook blackRook2 = Rook(7, 7, true);
-Knight blackKnight1 = Knight(7, 1, true);
-Knight blackKnight2 = Knight(7, 6, true);
-Bishop blackBishop1 = Bishop(7, 2, true);
-Bishop blackBishop2 = Bishop(7, 5, true);
-Queen blackQueen = Queen(7, 4, true);
-King blackKing = King(7, 3, true);
+ChessPiece blackRook1 = ChessPiece(7, 0, true, "rook");
+ChessPiece blackRook2 = ChessPiece(7, 7, true, "rook");
+ChessPiece blackKnight1 = ChessPiece(7, 1, true, "knight");
+ChessPiece blackKnight2 = ChessPiece(7, 6, true, "knight");
+ChessPiece blackBishop1 = ChessPiece(7, 2, true, "bishop");
+ChessPiece blackBishop2 = ChessPiece(7, 5, true, "bishop");
+ChessPiece blackQueen = ChessPiece(7, 4, true, "queen");
+ChessPiece blackKing = ChessPiece(7, 3, true, "king");
+
+ChessPiece* pieceArray[32] = {
+    &whiteRook1, &whiteRook2, &whiteKnight1, &whiteKnight2, &whiteBishop1,
+    &whiteBishop2, &whiteQueen, &whiteKing, &whitePawns[0], &whitePawns[1],
+    &whitePawns[2], &whitePawns[3], &whitePawns[4], &whitePawns[5], &whitePawns[6],
+    &whitePawns[7], &blackRook1, &blackRook2, &blackKnight1, &blackKnight2,
+    &blackBishop1, &blackBishop2, &blackQueen, &blackKing, &blackPawns[0],
+    &blackPawns[1], &blackPawns[2], &blackPawns[3], &blackPawns[4], &blackPawns[5],
+    &blackPawns[6], &blackPawns[7]
+};
 
 void drawPiece(const char* imgName, int xPos, int yPos) {
     SDL_Surface * image = IMG_Load(imgName);
     SDL_Texture * texture = SDL_CreateTextureFromSurface(render, image);
-    SDL_Rect piecRect; piecRect.x = 50 * xPos; piecRect.y = 50 * yPos; piecRect.w = 50; piecRect.h = 50;
-    SDL_RenderCopy(render, texture, NULL, &piecRect);
+    SDL_Rect pieceRect; pieceRect.x = 50 * xPos; pieceRect.y = 50 * yPos; pieceRect.w = 50; pieceRect.h = 50;
+    SDL_RenderCopy(render, texture, NULL, &pieceRect);
 }
 
-void pieceClicked(int x, int y) {
-    highlightBoardMap[prevY][prevX] = false;
-    if (prevY != y || prevX != x) {
-        highlightBoardMap[y][x] = true;
+ChessPiece* checkIfPieceClicked(int x, int y) {
+    for (int i = 0; i < 32; i++) {
+        if (pieceArray[i]->getRow() == y && pieceArray[i]->getCol() == x) {
+            return pieceArray[i];
+        }
     }
-    prevX = x; prevY = y;
-    draw();
+    return NULL;
+}
+
+void clicked(int x, int y) {
+    if (checkIfPieceClicked(x, y) != NULL) {
+        
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                highlightBoardMap[i][j] = false;
+            }
+        }
+        
+        if (prevY != y || prevX != x) {
+            highlightBoardMap[y][x] = true;
+            ChessPiece* pieceCheck = checkIfPieceClicked(x, y);
+            if (pieceCheck->getType() == "pawn") {
+                if (pieceCheck->getColor()) {
+                    highlightBoardMap[y - 1][x] = true;
+                }
+                else {
+                    highlightBoardMap[y + 1][x] = true;
+                }
+            }
+            prevX = x; prevY = y;
+        }
+        else {
+            prevX = -1; prevY = -1;
+        }
+        draw();
+    }
 }
 
 void draw() {
@@ -111,11 +150,6 @@ void draw() {
         }
         isBlack = isBlack ? false : true;
     }
-
-//    SDL_Surface * image = IMG_Load("blkQueen.png");
-//    SDL_Texture * texture = SDL_CreateTextureFromSurface(render, image);
-//    SDL_Rect pieceRect; pieceRect.x = 50; pieceRect.y = 50; pieceRect.w = 50; pieceRect.h = 50;
-//    SDL_RenderCopy(render, texture, NULL, &pieceRect);
     
     for (int i = 0; i < 8; i++) {
         drawPiece(blackPawns[i].getImgName(), blackPawns[i].getCol(), blackPawns[i].getRow());
@@ -166,7 +200,7 @@ int main(int argc, const char * argv[]) {
                 isQuit = true;
             }
             else if (event.type == SDL_MOUSEBUTTONDOWN) {
-                pieceClicked(floor(event.motion.x / 50), floor(event.motion.y / 50));
+                clicked(floor(event.motion.x / 50), floor(event.motion.y / 50));
             }
         }
     }
