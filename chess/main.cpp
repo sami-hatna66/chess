@@ -16,16 +16,25 @@ void init();
 void draw();
 void close();
 void drawPiece();
-void pieceClicked(int x, int y);
 
 SDL_Window* win = NULL;
 SDL_Surface* surface = NULL;
 SDL_Renderer* render = NULL;
 
+struct gameStats {
+    int turnCount;
+    enum {choosingPiece, choosingMove} phase; // "choosingPiece" or "choosingMove"
+    enum {black, white} activePlayer; // "black" or "white"
+};
+
+gameStats gameInstance;
+
 void init() {
     SDL_Init(SDL_INIT_VIDEO);
     IMG_Init(IMG_INIT_PNG);
     win = SDL_CreateWindow("Chess", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 400, 400, SDL_WINDOW_SHOWN);
+    
+    gameStats gameInstance = {0, gameStats::choosingPiece, gameStats::black};
 }
 
 int prevX = -1;
@@ -81,17 +90,30 @@ void drawPiece(const char* imgName, int xPos, int yPos) {
     SDL_RenderCopy(render, texture, NULL, &pieceRect);
 }
 
-ChessPiece* checkIfPieceClicked(int x, int y) {
+ChessPiece* checkIfPieceIn(int col, int row) {
     for (int i = 0; i < 32; i++) {
-        if (pieceArray[i]->getRow() == y && pieceArray[i]->getCol() == x) {
+        if (pieceArray[i]->getRow() == row && pieceArray[i]->getCol() == col) {
             return pieceArray[i];
         }
     }
     return NULL;
 }
 
-void clicked(int x, int y) {
-    if (checkIfPieceClicked(x, y) != NULL) {
+void pawnLogic(ChessPiece* piece, int col, int row) {
+    if (piece->getColor()) {
+        if (checkIfPieceIn(col, row - 1) == NULL) { highlightBoardMap[row - 1][col] = true; }
+        if (checkIfPieceIn(col + 1, row - 1) != NULL) { highlightBoardMap[row - 1][col + 1] = true; }
+        if (checkIfPieceIn(col - 1, row - 1) != NULL) { highlightBoardMap[row - 1][col - 1] = true; }
+    }
+    else {
+        if (checkIfPieceIn(col, row + 1) == NULL) { highlightBoardMap[row + 1][col] = true; }
+        if (checkIfPieceIn(col + 1, row + 1) != NULL) { highlightBoardMap[row + 1][col + 1] = true; }
+        if (checkIfPieceIn(col - 1, row + 1) != NULL) { highlightBoardMap[row + 1][col - 1] = true; }
+    }
+}
+
+void clicked(int col, int row) {
+    if (checkIfPieceIn(col, row) != NULL) {
         
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
@@ -99,18 +121,15 @@ void clicked(int x, int y) {
             }
         }
         
-        if (prevY != y || prevX != x) {
-            highlightBoardMap[y][x] = true;
-            ChessPiece* pieceCheck = checkIfPieceClicked(x, y);
+        if (prevY != row || prevX != col) {
+            highlightBoardMap[row][col] = true;
+            ChessPiece* pieceCheck = checkIfPieceIn(col, row);
+            
             if (pieceCheck->getType() == "pawn") {
-                if (pieceCheck->getColor()) {
-                    highlightBoardMap[y - 1][x] = true;
-                }
-                else {
-                    highlightBoardMap[y + 1][x] = true;
-                }
+                pawnLogic(pieceCheck, col, row);
             }
-            prevX = x; prevY = y;
+            
+            prevX = col; prevY = row;
         }
         else {
             prevX = -1; prevY = -1;
@@ -200,7 +219,9 @@ int main(int argc, const char * argv[]) {
                 isQuit = true;
             }
             else if (event.type == SDL_MOUSEBUTTONDOWN) {
-                clicked(floor(event.motion.x / 50), floor(event.motion.y / 50));
+                if (gameInstance.phase == gameStats::choosingPiece) {
+                    clicked(floor(event.motion.x / 50), floor(event.motion.y / 50));
+                }
             }
         }
     }
