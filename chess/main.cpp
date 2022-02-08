@@ -22,9 +22,11 @@ SDL_Surface* surface = NULL;
 SDL_Renderer* render = NULL;
 
 struct gameStats {
-    int turnCount;
-    enum {choosingPiece, choosingMove} phase; // "choosingPiece" or "choosingMove"
-    enum {black, white} activePlayer; // "black" or "white"
+    int turnCount = 0;
+    enum {choosingPiece, choosingMove} phase = choosingPiece; // "choosingPiece" or "choosingMove"
+    enum {black, white} activePlayer = black; // "black" or "white"
+    int prevX = -1;
+    int prevY = -1;
 };
 
 gameStats gameInstance;
@@ -33,45 +35,42 @@ void init() {
     SDL_Init(SDL_INIT_VIDEO);
     IMG_Init(IMG_INIT_PNG);
     win = SDL_CreateWindow("Chess", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 400, 400, SDL_WINDOW_SHOWN);
-    
-    gameStats gameInstance = {0, gameStats::choosingPiece, gameStats::black};
 }
 
-int prevX = -1;
-int prevY = -1;
-bool highlightBoardMap[8][8] = {{0}};
+enum boardStates {notActive, activeNotMove, activeMove};
+boardStates highlightBoardMap[8][8] = {{notActive}};
 
 vector<ChessPiece> whitePawns = {
-    ChessPiece(1, 0, false, "pawn"), ChessPiece(1, 1, false, "pawn"),
-    ChessPiece(1, 2, false, "pawn"), ChessPiece(1, 3, false, "pawn"),
-    ChessPiece(1, 4, false, "pawn"), ChessPiece(1, 5, false, "pawn"),
-    ChessPiece(1, 6, false, "pawn"), ChessPiece(1, 7, false, "pawn"),
+    ChessPiece(1, 0, white, pawn, true), ChessPiece(1, 1, white, pawn, true),
+    ChessPiece(1, 2, white, pawn, true), ChessPiece(1, 3, white, pawn, true),
+    ChessPiece(1, 4, white, pawn, true), ChessPiece(1, 5, white, pawn, true),
+    ChessPiece(1, 6, white, pawn, true), ChessPiece(1, 7, white, pawn, true),
 };
 
-ChessPiece whiteRook1 = ChessPiece(0, 0, false, "rook");
-ChessPiece whiteRook2 = ChessPiece(0, 7, false, "rook");
-ChessPiece whiteKnight1 = ChessPiece(0, 1, false, "knight");
-ChessPiece whiteKnight2 = ChessPiece(0, 6, false, "knight");
-ChessPiece whiteBishop1 = ChessPiece(0, 2, false, "bishop");
-ChessPiece whiteBishop2 = ChessPiece(0, 5, false, "bishop");
-ChessPiece whiteQueen = ChessPiece(0, 3, false, "queen");
-ChessPiece whiteKing = ChessPiece(0, 4, false, "king");
+ChessPiece whiteRook1 = ChessPiece(0, 0, white, rook, true);
+ChessPiece whiteRook2 = ChessPiece(0, 7, white, rook, true);
+ChessPiece whiteKnight1 = ChessPiece(0, 1, white, knight, true);
+ChessPiece whiteKnight2 = ChessPiece(0, 6, white, knight, true);
+ChessPiece whiteBishop1 = ChessPiece(0, 2, white, bishop, true);
+ChessPiece whiteBishop2 = ChessPiece(0, 5, white, bishop, true);
+ChessPiece whiteQueen = ChessPiece(0, 3, white, queen, true);
+ChessPiece whiteKing = ChessPiece(0, 4, white, king, true);
 
 vector<ChessPiece> blackPawns = {
-    ChessPiece(6, 0, true, "pawn"), ChessPiece(6, 1, true, "pawn"),
-    ChessPiece(6, 2, true, "pawn"), ChessPiece(6, 3, true, "pawn"),
-    ChessPiece(6, 4, true, "pawn"), ChessPiece(6, 5, true, "pawn"),
-    ChessPiece(6, 6, true, "pawn"), ChessPiece(6, 7, true, "pawn"),
+    ChessPiece(6, 0, black, pawn, true), ChessPiece(6, 1, black, pawn, true),
+    ChessPiece(6, 2, black, pawn, true), ChessPiece(6, 3, black, pawn, true),
+    ChessPiece(6, 4, black, pawn, true), ChessPiece(6, 5, black, pawn, true),
+    ChessPiece(6, 6, black, pawn, true), ChessPiece(6, 7, black, pawn, true),
 };
 
-ChessPiece blackRook1 = ChessPiece(7, 0, true, "rook");
-ChessPiece blackRook2 = ChessPiece(7, 7, true, "rook");
-ChessPiece blackKnight1 = ChessPiece(7, 1, true, "knight");
-ChessPiece blackKnight2 = ChessPiece(7, 6, true, "knight");
-ChessPiece blackBishop1 = ChessPiece(7, 2, true, "bishop");
-ChessPiece blackBishop2 = ChessPiece(7, 5, true, "bishop");
-ChessPiece blackQueen = ChessPiece(7, 4, true, "queen");
-ChessPiece blackKing = ChessPiece(7, 3, true, "king");
+ChessPiece blackRook1 = ChessPiece(7, 0, black, rook, true);
+ChessPiece blackRook2 = ChessPiece(7, 7, black, rook, true);
+ChessPiece blackKnight1 = ChessPiece(7, 1, black, knight, true);
+ChessPiece blackKnight2 = ChessPiece(7, 6, black, knight, true);
+ChessPiece blackBishop1 = ChessPiece(7, 2, black, bishop, true);
+ChessPiece blackBishop2 = ChessPiece(7, 5, black, bishop, true);
+ChessPiece blackQueen = ChessPiece(7, 4, black, queen, true);
+ChessPiece blackKing = ChessPiece(7, 3, black, king, true);
 
 ChessPiece* pieceArray[32] = {
     &whiteRook1, &whiteRook2, &whiteKnight1, &whiteKnight2, &whiteBishop1,
@@ -92,7 +91,7 @@ void drawPiece(const char* imgName, int xPos, int yPos) {
 
 ChessPiece* checkIfPieceIn(int col, int row) {
     for (int i = 0; i < 32; i++) {
-        if (pieceArray[i]->getRow() == row && pieceArray[i]->getCol() == col) {
+        if (pieceArray[i]->getIsAlive() && pieceArray[i]->getRow() == row && pieceArray[i]->getCol() == col) {
             return pieceArray[i];
         }
     }
@@ -100,41 +99,78 @@ ChessPiece* checkIfPieceIn(int col, int row) {
 }
 
 void pawnLogic(ChessPiece* piece, int col, int row) {
-    if (piece->getColor()) {
-        if (checkIfPieceIn(col, row - 1) == NULL) { highlightBoardMap[row - 1][col] = true; }
-        if (checkIfPieceIn(col + 1, row - 1) != NULL) { highlightBoardMap[row - 1][col + 1] = true; }
-        if (checkIfPieceIn(col - 1, row - 1) != NULL) { highlightBoardMap[row - 1][col - 1] = true; }
+    if (piece->getColor() == black) {
+        if (checkIfPieceIn(col, row - 1) == NULL) {
+            highlightBoardMap[row - 1][col] = activeMove;
+            if (piece->getIsFirstMove() && checkIfPieceIn(col, row - 2) == NULL) {
+                highlightBoardMap[row - 2][col] = activeMove;
+                piece->toggleFirstMove();
+            }
+        }
+        if (checkIfPieceIn(col + 1, row - 1) != NULL && checkIfPieceIn(col + 1, row - 1)->getColor() != piece->getColor()) {
+            highlightBoardMap[row - 1][col + 1] = activeMove;
+        }
+        if (checkIfPieceIn(col - 1, row - 1) != NULL && checkIfPieceIn(col - 1, row - 1)->getColor() != piece->getColor()) {
+            highlightBoardMap[row - 1][col - 1] = activeMove;
+        }
     }
     else {
-        if (checkIfPieceIn(col, row + 1) == NULL) { highlightBoardMap[row + 1][col] = true; }
-        if (checkIfPieceIn(col + 1, row + 1) != NULL) { highlightBoardMap[row + 1][col + 1] = true; }
-        if (checkIfPieceIn(col - 1, row + 1) != NULL) { highlightBoardMap[row + 1][col - 1] = true; }
+        if (checkIfPieceIn(col, row + 1) == NULL) {
+            highlightBoardMap[row + 1][col] = activeMove;
+            if (piece->getIsFirstMove() && checkIfPieceIn(col, row + 2) == NULL) {
+                highlightBoardMap[row + 2][col] = activeMove;
+                piece->toggleFirstMove();
+            }
+        }
+        if (checkIfPieceIn(col + 1, row + 1) != NULL && checkIfPieceIn(col + 1, row + 1)->getColor() != piece->getColor()) {
+            highlightBoardMap[row + 1][col + 1] = activeMove;
+        }
+        if (checkIfPieceIn(col - 1, row + 1) != NULL && checkIfPieceIn(col - 1, row + 1)->getColor() != piece->getColor()) {
+            highlightBoardMap[row + 1][col - 1] = activeMove;
+        }
     }
 }
 
 void clicked(int col, int row) {
     if (checkIfPieceIn(col, row) != NULL) {
-        
+        gameInstance.phase = gameStats::choosingMove;
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                highlightBoardMap[i][j] = false;
+                highlightBoardMap[i][j] = notActive;
             }
         }
         
-        if (prevY != row || prevX != col) {
-            highlightBoardMap[row][col] = true;
+        if (gameInstance.prevY != row || gameInstance.prevX != col) {
+            highlightBoardMap[row][col] = activeNotMove;
             ChessPiece* pieceCheck = checkIfPieceIn(col, row);
             
-            if (pieceCheck->getType() == "pawn") {
+            if (pieceCheck->getType() == pawn) {
                 pawnLogic(pieceCheck, col, row);
             }
             
-            prevX = col; prevY = row;
+            gameInstance.prevX = col; gameInstance.prevY = row;
         }
         else {
-            prevX = -1; prevY = -1;
+            gameInstance.prevX = -1; gameInstance.prevY = -1;
         }
         draw();
+    }
+}
+
+void chooseMove(int col, int row) {
+    if (highlightBoardMap[row][col] == activeMove) {
+        ChessPiece* activePiece = checkIfPieceIn(gameInstance.prevX, gameInstance.prevY);
+        activePiece->movePiece(col, row);
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                highlightBoardMap[i][j] = notActive;
+            }
+        }
+        draw();
+        gameInstance.phase = gameStats::choosingPiece;
+    }
+    else {
+        clicked(col, row);
     }
 }
 
@@ -146,7 +182,7 @@ void draw() {
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
             if (isBlack) {
-                if (highlightBoardMap[i][j]) {
+                if (highlightBoardMap[i][j] == activeNotMove || highlightBoardMap[i][j] == activeMove) {
                     SDL_SetRenderDrawColor(render, 0, 255, 0, 255);
                 }
                 else {
@@ -155,7 +191,7 @@ void draw() {
                 isBlack = false;
             }
             else {
-                if (highlightBoardMap[i][j]) {
+                if (highlightBoardMap[i][j] == activeNotMove || highlightBoardMap[i][j] == activeMove) {
                     SDL_SetRenderDrawColor(render, 0, 255, 0, 255);
                 }
                 else {
@@ -170,31 +206,11 @@ void draw() {
         isBlack = isBlack ? false : true;
     }
     
-    for (int i = 0; i < 8; i++) {
-        drawPiece(blackPawns[i].getImgName(), blackPawns[i].getCol(), blackPawns[i].getRow());
+    for (int i = 0; i < 32; i++) {
+        if (pieceArray[i]->getIsAlive()) {
+            drawPiece(pieceArray[i]->getImgName(), pieceArray[i]->getCol(), pieceArray[i]->getRow());
+        }
     }
-    
-    drawPiece(blackRook1.getImgName(), blackRook1.getCol(), blackRook1.getRow());
-    drawPiece(blackKnight1.getImgName(), blackKnight1.getCol(), blackKnight1.getRow());
-    drawPiece(blackBishop1.getImgName(), blackBishop1.getCol(), blackBishop1.getRow());
-    drawPiece(blackQueen.getImgName(), blackQueen.getCol(), blackQueen.getRow());
-    drawPiece(blackKing.getImgName(), blackKing.getCol(), blackKing.getRow());
-    drawPiece(blackBishop2.getImgName(), blackBishop2.getCol(), blackBishop2.getRow());
-    drawPiece(blackKnight2.getImgName(), blackKnight2.getCol(), blackKnight2.getRow());
-    drawPiece(blackRook2.getImgName(), blackRook2.getCol(), blackRook2.getRow());
-    
-    for (int i = 0; i < 8; i++) {
-        drawPiece(whitePawns[i].getImgName(), whitePawns[i].getCol(), whitePawns[i].getRow());
-    }
-    
-    drawPiece(whiteRook1.getImgName(), whiteRook1.getCol(), whiteRook1.getRow());
-    drawPiece(whiteKnight1.getImgName(), whiteKnight1.getCol(), whiteKnight1.getRow());
-    drawPiece(whiteBishop1.getImgName(), whiteBishop1.getCol(), whiteBishop1.getRow());
-    drawPiece(whiteQueen.getImgName(), whiteQueen.getCol(), whiteQueen.getRow());
-    drawPiece(whiteKing.getImgName(), whiteKing.getCol(), whiteKing.getRow());
-    drawPiece(whiteBishop2.getImgName(), whiteBishop2.getCol(), whiteBishop2.getRow());
-    drawPiece(whiteKnight2.getImgName(), whiteKnight2.getCol(), whiteKnight2.getRow());
-    drawPiece(whiteRook2.getImgName(), whiteRook2.getCol(), whiteRook2.getRow());
     
     SDL_RenderPresent(render);
 }
@@ -221,6 +237,9 @@ int main(int argc, const char * argv[]) {
             else if (event.type == SDL_MOUSEBUTTONDOWN) {
                 if (gameInstance.phase == gameStats::choosingPiece) {
                     clicked(floor(event.motion.x / 50), floor(event.motion.y / 50));
+                }
+                else if (gameInstance.phase == gameStats::choosingMove) {
+                    chooseMove(floor(event.motion.x / 50), floor(event.motion.y / 50));
                 }
             }
         }

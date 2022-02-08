@@ -14,18 +14,28 @@
 #include <SDL.h>
 using namespace std;
 
+enum colors {black, white};
+enum types {pawn, rook, knight, bishop, king, queen};
+
 class ChessPiece {
 private:
     int pos[2]; // [Row, Column]
-    bool isBlack; // true = black, false = white
-    string type;
+    colors color;
+    types type;
+    bool isFirstMove;
+    bool isAlive;
 public:
-    ChessPiece(int pRow, int pCol, bool pColor, string pType);
+    ChessPiece(int pRow, int pCol, colors pColor, types pType, bool pIsAlive);
     int getRow();
     int getCol();
-    bool getColor();
-    string getType();
+    colors getColor();
+    types getType();
+    bool getIsFirstMove();
+    bool getIsAlive();
     const char* getImgName();
+    void movePiece(int newCol, int newRow);
+    void toggleFirstMove();
+    void toggleIsAlive();
 };
 
 //class Pawn : public ChessPiece {

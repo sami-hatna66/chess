@@ -11,11 +11,13 @@
 #include <SDL.h>
 using namespace std;
 
-ChessPiece::ChessPiece(int pRow, int pCol, bool pColor, string pType) {
+ChessPiece::ChessPiece(int pRow, int pCol, colors pColor, types pType, bool pIsAlive) {
     pos[0] = pRow;
     pos[1] = pCol;
-    isBlack = pColor;
+    color = pColor;
     type = pType;
+    isFirstMove = true;
+    isAlive = pIsAlive;
 }
     
 int ChessPiece::getRow() {
@@ -26,17 +28,52 @@ int ChessPiece::getCol() {
     return pos[1];
 }
 
-bool ChessPiece::getColor() {
-    return isBlack;
+void ChessPiece::movePiece(int newCol, int newRow) {
+    pos[0] = newRow;
+    pos[1] = newCol;
 }
 
-string ChessPiece::getType() {
+colors ChessPiece::getColor() {
+    return color;
+}
+
+types ChessPiece::getType() {
     return type;
 }
 
+bool ChessPiece::getIsFirstMove() {
+    return isFirstMove;
+}
+
+void ChessPiece::toggleFirstMove() {
+    isFirstMove = false;
+}
+
+void ChessPiece::toggleIsAlive() {
+    isAlive = false;
+}
+
+bool ChessPiece::getIsAlive() {
+    return isAlive;
+}
+
 const char* ChessPiece::getImgName() {
-    string result = isBlack ? "blk" : "wht";
-    string tempType = type;
+    string result = color == black ? "blk" : "wht";
+    string tempType;
+    switch (type) {
+        case pawn:
+            tempType = "pawn"; break;
+        case rook:
+            tempType = "rook"; break;
+        case knight:
+            tempType = "knight"; break;
+        case bishop:
+            tempType = "bishop"; break;
+        case king:
+            tempType = "king"; break;
+        default:
+            tempType = "queen"; break;
+    }
     tempType[0] = toupper(tempType[0]);
     result = result + tempType + ".png";
     return result.c_str();
