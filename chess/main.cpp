@@ -20,6 +20,7 @@ ChessPiece* checkIfPieceIn(int col, int row);
 void clicked(int col, int row);
 void chooseMove(int col, int row);
 void pawnLogic(ChessPiece* piece, int col, int row);
+void rookLogic(ChessPiece* piece, int col, int row);
 
 static SDL_Window* win = NULL;
 SDL_Surface* surface = NULL;
@@ -51,7 +52,7 @@ vector<ChessPiece> whitePawns = {
     ChessPiece(1, 6, white, pawn, true), ChessPiece(1, 7, white, pawn, true),
 };
 
-ChessPiece whiteRook1 = ChessPiece(0, 0, white, rook, true);
+ChessPiece whiteRook1 = ChessPiece(3, 3, white, rook, true);
 ChessPiece whiteRook2 = ChessPiece(0, 7, white, rook, true);
 ChessPiece whiteKnight1 = ChessPiece(0, 1, white, knight, true);
 ChessPiece whiteKnight2 = ChessPiece(0, 6, white, knight, true);
@@ -115,8 +116,13 @@ void clicked(int col, int row) {
             highlightBoardMap[row][col] = activeNotMove;
             ChessPiece* pieceCheck = checkIfPieceIn(col, row);
             
-            if (pieceCheck->getType() == pawn) {
-                pawnLogic(pieceCheck, col, row);
+            switch (pieceCheck->getType()) {
+                case rook:
+                    rookLogic(pieceCheck, col, row);
+                    break;
+                default:
+                    pawnLogic(pieceCheck, col, row);
+                    break;
             }
             
             gameInstance.prevX = col; gameInstance.prevY = row;
@@ -222,6 +228,60 @@ void pawnLogic(ChessPiece* piece, int col, int row) {
         }
         if (checkIfPieceIn(col - 1, row + 1) != NULL && checkIfPieceIn(col - 1, row + 1)->getColor() != piece->getColor()) {
             highlightBoardMap[row + 1][col - 1] = activeMove;
+        }
+    }
+}
+
+void rookLogic(ChessPiece* piece, int col, int row) {
+    for (int i = row - 1; i >= 0; i--) {
+        if (checkIfPieceIn(col, i) == NULL) {
+            highlightBoardMap[i][col] = activeMove;
+        }
+        else if (checkIfPieceIn(col, i)->getColor() != piece->getColor()) {
+            highlightBoardMap[i][col] = activeMove;
+            break;
+        }
+        else {
+            break;
+        }
+    }
+    
+    for (int j = row + 1; j < 8; j++) {
+        if (checkIfPieceIn(col, j) == NULL) {
+            highlightBoardMap[j][col] = activeMove;
+        }
+        else if (checkIfPieceIn(col, j)->getColor() != piece->getColor()) {
+            highlightBoardMap[j][col] = activeMove;
+            break;
+        }
+        else {
+            break;
+        }
+    }
+    
+    for (int k = col - 1; k >= 0; k--) {
+        if (checkIfPieceIn(k, row) == NULL) {
+            highlightBoardMap[row][k] = activeMove;
+        }
+        else if (checkIfPieceIn(k, row)->getColor() != piece->getColor()) {
+            highlightBoardMap[row][k] = activeMove;
+            break;
+        }
+        else {
+            break;
+        }
+    }
+    
+    for (int l = col + 1; l < 8; l++) {
+        if (checkIfPieceIn(l, row) == NULL) {
+            highlightBoardMap[row][l] = activeMove;
+        }
+        else if (checkIfPieceIn(l, row)->getColor() != piece->getColor()) {
+            highlightBoardMap[row][l] = activeMove;
+            break;
+        }
+        else {
+            break;
         }
     }
 }
