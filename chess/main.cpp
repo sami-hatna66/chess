@@ -23,6 +23,7 @@ void pawnLogic(ChessPiece* piece, int col, int row);
 void rookLogic(ChessPiece* piece, int col, int row);
 void knightLogic(ChessPiece* piece, int col, int row);
 void bishopLogic(ChessPiece* piece, int col, int row);
+void queenLogic(ChessPiece* piece, int col, int row);
 
 static SDL_Window* win = NULL;
 SDL_Surface* surface = NULL;
@@ -58,9 +59,9 @@ ChessPiece whiteRook1 = ChessPiece(0, 0, white, rook, true);
 ChessPiece whiteRook2 = ChessPiece(0, 7, white, rook, true);
 ChessPiece whiteKnight1 = ChessPiece(0, 1, white, knight, true);
 ChessPiece whiteKnight2 = ChessPiece(0, 6, white, knight, true);
-ChessPiece whiteBishop1 = ChessPiece(4, 4, white, bishop, true);
+ChessPiece whiteBishop1 = ChessPiece(0, 2, white, bishop, true);
 ChessPiece whiteBishop2 = ChessPiece(0, 5, white, bishop, true);
-ChessPiece whiteQueen = ChessPiece(0, 3, white, queen, true);
+ChessPiece whiteQueen = ChessPiece(4, 4, white, queen, true);
 ChessPiece whiteKing = ChessPiece(0, 4, white, king, true);
 
 vector<ChessPiece> blackPawns = {
@@ -125,6 +126,8 @@ void clicked(int col, int row) {
                     knightLogic(pieceCheck, col, row); break;
                 case bishop:
                     bishopLogic(pieceCheck, col, row); break;
+                case queen:
+                    queenLogic(pieceCheck, col, row); break;
                 default:
                     pawnLogic(pieceCheck, col, row); break;
             }
@@ -392,6 +395,11 @@ void bishopLogic(ChessPiece* piece, int col, int row) {
         }
         else { break; }
     }
+}
+
+void queenLogic(ChessPiece* piece, int col, int row) {
+    rookLogic(piece, col, row);
+    bishopLogic(piece, col, row);
 }
 
 void close() {
