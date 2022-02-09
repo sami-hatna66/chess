@@ -16,6 +16,10 @@ void init();
 void draw();
 void close();
 void drawPiece();
+ChessPiece* checkIfPieceIn(int col, int row);
+void clicked(int col, int row);
+void chooseMove(int col, int row);
+void pawnLogic(ChessPiece* piece, int col, int row);
 
 static SDL_Window* win = NULL;
 SDL_Surface* surface = NULL;
@@ -59,7 +63,7 @@ ChessPiece whiteKing = ChessPiece(0, 4, white, king, true);
 vector<ChessPiece> blackPawns = {
     ChessPiece(6, 0, black, pawn, true), ChessPiece(6, 1, black, pawn, true),
     ChessPiece(6, 2, black, pawn, true), ChessPiece(6, 3, black, pawn, true),
-    ChessPiece(6, 4, black, pawn, true), ChessPiece(2, 5, black, pawn, true),
+    ChessPiece(6, 4, black, pawn, true), ChessPiece(6, 5, black, pawn, true),
     ChessPiece(6, 6, black, pawn, true), ChessPiece(6, 7, black, pawn, true),
 };
 
@@ -96,39 +100,6 @@ ChessPiece* checkIfPieceIn(int col, int row) {
         }
     }
     return NULL;
-}
-
-void pawnLogic(ChessPiece* piece, int col, int row) {
-    if (piece->getColor() == black) {
-        if (checkIfPieceIn(col, row - 1) == NULL) {
-            highlightBoardMap[row - 1][col] = activeMove;
-            if (piece->getIsFirstMove() && checkIfPieceIn(col, row - 2) == NULL) {
-                highlightBoardMap[row - 2][col] = activeMove;
-                piece->toggleFirstMove();
-            }
-        }
-        if (checkIfPieceIn(col + 1, row - 1) != NULL && checkIfPieceIn(col + 1, row - 1)->getColor() != piece->getColor()) {
-            highlightBoardMap[row - 1][col + 1] = activeMove;
-        }
-        if (checkIfPieceIn(col - 1, row - 1) != NULL && checkIfPieceIn(col - 1, row - 1)->getColor() != piece->getColor()) {
-            highlightBoardMap[row - 1][col - 1] = activeMove;
-        }
-    }
-    else {
-        if (checkIfPieceIn(col, row + 1) == NULL) {
-            highlightBoardMap[row + 1][col] = activeMove;
-            if (piece->getIsFirstMove() && checkIfPieceIn(col, row + 2) == NULL) {
-                highlightBoardMap[row + 2][col] = activeMove;
-                piece->toggleFirstMove();
-            }
-        }
-        if (checkIfPieceIn(col + 1, row + 1) != NULL && checkIfPieceIn(col + 1, row + 1)->getColor() != piece->getColor()) {
-            highlightBoardMap[row + 1][col + 1] = activeMove;
-        }
-        if (checkIfPieceIn(col - 1, row + 1) != NULL && checkIfPieceIn(col - 1, row + 1)->getColor() != piece->getColor()) {
-            highlightBoardMap[row + 1][col - 1] = activeMove;
-        }
-    }
 }
 
 void clicked(int col, int row) {
@@ -173,6 +144,7 @@ void chooseMove(int col, int row) {
                 highlightBoardMap[i][j] = notActive;
             }
         }
+        activePiece->toggleFirstMove();
         draw();
         gameInstance.phase = gameStats::choosingPiece;
     }
@@ -223,9 +195,39 @@ void draw() {
     SDL_RenderPresent(render);
 }
 
+void pawnLogic(ChessPiece* piece, int col, int row) {
+    if (piece->getColor() == black) {
+        if (checkIfPieceIn(col, row - 1) == NULL) {
+            highlightBoardMap[row - 1][col] = activeMove;
+            if (piece->getIsFirstMove() && checkIfPieceIn(col, row - 2) == NULL) {
+                highlightBoardMap[row - 2][col] = activeMove;
+            }
+        }
+        if (checkIfPieceIn(col + 1, row - 1) != NULL && checkIfPieceIn(col + 1, row - 1)->getColor() != piece->getColor()) {
+            highlightBoardMap[row - 1][col + 1] = activeMove;
+        }
+        if (checkIfPieceIn(col - 1, row - 1) != NULL && checkIfPieceIn(col - 1, row - 1)->getColor() != piece->getColor()) {
+            highlightBoardMap[row - 1][col - 1] = activeMove;
+        }
+    }
+    else {
+        if (checkIfPieceIn(col, row + 1) == NULL) {
+            highlightBoardMap[row + 1][col] = activeMove;
+            if (piece->getIsFirstMove() && checkIfPieceIn(col, row + 2) == NULL) {
+                highlightBoardMap[row + 2][col] = activeMove;
+            }
+        }
+        if (checkIfPieceIn(col + 1, row + 1) != NULL && checkIfPieceIn(col + 1, row + 1)->getColor() != piece->getColor()) {
+            highlightBoardMap[row + 1][col + 1] = activeMove;
+        }
+        if (checkIfPieceIn(col - 1, row + 1) != NULL && checkIfPieceIn(col - 1, row + 1)->getColor() != piece->getColor()) {
+            highlightBoardMap[row + 1][col - 1] = activeMove;
+        }
+    }
+}
+
 void close() {
     SDL_DestroyWindow(win);
-    SDL_DestroyRenderer(render);
     IMG_Quit();
     SDL_Quit();
 }
@@ -246,7 +248,7 @@ int main(int argc, const char * argv[]) {
             else if (event.type == SDL_MOUSEBUTTONDOWN) {
                 SDL_Delay(10);
                 if (gameInstance.phase == gameStats::choosingPiece) {
-                    cout << "(" << floor(event.motion.x / 50) << ", " << floor(event.motion.y / 50) << ")";
+                    cout << "(" << floor(event.motion.x / 50) << ", " << floor(event.motion.y / 50) << ")" << endl;
                     clicked(floor(event.motion.x / 50), floor(event.motion.y / 50));
                 }
                 else if (gameInstance.phase == gameStats::choosingMove) {
