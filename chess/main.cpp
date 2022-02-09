@@ -17,9 +17,9 @@ void draw();
 void close();
 void drawPiece();
 
-SDL_Window* win = NULL;
+static SDL_Window* win = NULL;
 SDL_Surface* surface = NULL;
-SDL_Renderer* render = NULL;
+static SDL_Renderer* render = NULL;
 
 struct gameStats {
     int turnCount = 0;
@@ -59,7 +59,7 @@ ChessPiece whiteKing = ChessPiece(0, 4, white, king, true);
 vector<ChessPiece> blackPawns = {
     ChessPiece(6, 0, black, pawn, true), ChessPiece(6, 1, black, pawn, true),
     ChessPiece(6, 2, black, pawn, true), ChessPiece(6, 3, black, pawn, true),
-    ChessPiece(6, 4, black, pawn, true), ChessPiece(6, 5, black, pawn, true),
+    ChessPiece(6, 4, black, pawn, true), ChessPiece(2, 5, black, pawn, true),
     ChessPiece(6, 6, black, pawn, true), ChessPiece(6, 7, black, pawn, true),
 };
 
@@ -161,6 +161,13 @@ void chooseMove(int col, int row) {
     if (highlightBoardMap[row][col] == activeMove) {
         ChessPiece* activePiece = checkIfPieceIn(gameInstance.prevX, gameInstance.prevY);
         activePiece->movePiece(col, row);
+        
+        for (int i = 0; i < 32; i++) {
+            if (pieceArray[i]->getCol() == col && pieceArray[i]->getRow() == row && pieceArray[i] != activePiece) {
+                pieceArray[i]->toggleIsAlive();
+            }
+        }
+        
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 highlightBoardMap[i][j] = notActive;
@@ -175,6 +182,7 @@ void chooseMove(int col, int row) {
 }
 
 void draw() {
+    cout << render;
     SDL_SetRenderDrawColor(render, 241, 221, 206, 255);
     SDL_RenderClear(render);
     SDL_SetRenderDrawColor(render, 97, 61, 61, 255);
@@ -217,6 +225,7 @@ void draw() {
 
 void close() {
     SDL_DestroyWindow(win);
+    SDL_DestroyRenderer(render);
     IMG_Quit();
     SDL_Quit();
 }
@@ -235,7 +244,9 @@ int main(int argc, const char * argv[]) {
                 isQuit = true;
             }
             else if (event.type == SDL_MOUSEBUTTONDOWN) {
+                SDL_Delay(10);
                 if (gameInstance.phase == gameStats::choosingPiece) {
+                    cout << "(" << floor(event.motion.x / 50) << ", " << floor(event.motion.y / 50) << ")";
                     clicked(floor(event.motion.x / 50), floor(event.motion.y / 50));
                 }
                 else if (gameInstance.phase == gameStats::choosingMove) {
