@@ -43,7 +43,7 @@ gameStats gameInstance;
 void init() {
     SDL_Init(SDL_INIT_VIDEO);
     IMG_Init(IMG_INIT_PNG);
-    win = SDL_CreateWindow("Chess", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 400, 400, SDL_WINDOW_SHOWN);
+    win = SDL_CreateWindow("Chess - black turn", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 400, 400, SDL_WINDOW_SHOWN);
 }
 
 enum boardStates {notActive, activeNotMove, activeMove};
@@ -62,7 +62,7 @@ ChessPiece whiteKnight1 = ChessPiece(0, 1, white, knight, true);
 ChessPiece whiteKnight2 = ChessPiece(0, 6, white, knight, true);
 ChessPiece whiteBishop1 = ChessPiece(0, 2, white, bishop, true);
 ChessPiece whiteBishop2 = ChessPiece(0, 5, white, bishop, true);
-ChessPiece whiteQueen = ChessPiece(4, 4, white, queen, true);
+ChessPiece whiteQueen = ChessPiece(0, 3, white, queen, true);
 ChessPiece whiteKing = ChessPiece(0, 4, white, king, true);
 
 vector<ChessPiece> blackPawns = {
@@ -108,7 +108,7 @@ ChessPiece* checkIfPieceIn(int col, int row) {
 }
 
 void clicked(int col, int row) {
-    if (checkIfPieceIn(col, row) != NULL) {
+    if (checkIfPieceIn(col, row) != NULL && checkIfPieceIn(col, row)->getColor() == gameInstance.activePlayer) {
         gameInstance.phase = gameStats::choosingMove;
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
@@ -162,6 +162,12 @@ void chooseMove(int col, int row) {
         }
         activePiece->toggleFirstMove();
         draw();
+        gameInstance.activePlayer = (gameInstance.activePlayer == gameStats::black) ? gameStats::white : gameStats::black;
+        
+        string color = (gameInstance.activePlayer == gameStats::black) ? "black" : "white";
+        string title = "Chess - " + color + " turn";
+        SDL_SetWindowTitle(win, title.c_str());
+        
         gameInstance.phase = gameStats::choosingPiece;
     }
     else {
