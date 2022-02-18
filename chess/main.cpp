@@ -25,6 +25,7 @@ void knightLogic(ChessPiece* piece, int col, int row);
 void bishopLogic(ChessPiece* piece, int col, int row);
 void queenLogic(ChessPiece* piece, int col, int row);
 void kingLogic(ChessPiece* piece, int col, int row);
+bool checkCheckmate();
 
 static SDL_Window* win = NULL;
 SDL_Surface* surface = NULL;
@@ -90,6 +91,40 @@ ChessPiece* pieceArray[32] = {
     &blackPawns[1], &blackPawns[2], &blackPawns[3], &blackPawns[4], &blackPawns[5],
     &blackPawns[6], &blackPawns[7]
 };
+
+bool checkCheckmate() {
+    for (int i = 0; i < 32; i++) {
+        if (pieceArray[i]->getIsAlive()) {
+            switch (pieceArray[i]->getType()) {
+                case rook:
+                    rookLogic(pieceArray[i], pieceArray[i]->getCol(), pieceArray[i]->getRow()); break;
+                case knight:
+                    knightLogic(pieceArray[i], pieceArray[i]->getCol(), pieceArray[i]->getRow()); break;
+                case bishop:
+                    bishopLogic(pieceArray[i], pieceArray[i]->getCol(), pieceArray[i]->getRow()); break;
+                case queen:
+                    queenLogic(pieceArray[i], pieceArray[i]->getCol(), pieceArray[i]->getRow()); break;
+                case king:
+                    kingLogic(pieceArray[i], pieceArray[i]->getCol(), pieceArray[i]->getRow()); break;
+                default:
+                    pawnLogic(pieceArray[i], pieceArray[i]->getCol(), pieceArray[i]->getRow()); break;
+            }
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    if (highlightBoardMap[i][j] == activeMove && checkIfPieceIn(j, i) != NULL) {
+                        if (checkIfPieceIn(j, i)->getType() == king) {
+                            cout << endl << "check" << endl;
+                            highlightBoardMap[i][j] = notActive;
+                            break;
+                        }
+                    }
+                    highlightBoardMap[i][j] = notActive;
+                }
+            }
+        }
+    }
+    return true;
+}
 
 void drawPiece(const char* imgName, int xPos, int yPos) {
     SDL_Surface * image = IMG_Load(imgName);
@@ -481,6 +516,7 @@ int main(int argc, const char * argv[]) {
                 }
                 else if (gameInstance.phase == gameStats::choosingMove) {
                     chooseMove(floor(event.motion.x / 50), floor(event.motion.y / 50));
+                    checkCheckmate();
                 }
             }
         }
