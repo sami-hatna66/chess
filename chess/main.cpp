@@ -37,6 +37,7 @@ struct gameStats {
     enum {black, white} activePlayer = black; // "black" or "white"
     int prevX = -1;
     int prevY = -1;
+    enum {blackCheck, whiteCheck, both, neither} inCheck = neither;
 };
 
 gameStats gameInstance;
@@ -93,6 +94,8 @@ ChessPiece* pieceArray[32] = {
 };
 
 bool checkCheckmate() {
+    bool isBlackInCheck = false;
+    bool isWhiteInCheck = false;
     for (int i = 0; i < 32; i++) {
         if (pieceArray[i]->getIsAlive()) {
             switch (pieceArray[i]->getType()) {
@@ -109,20 +112,48 @@ bool checkCheckmate() {
                 default:
                     pawnLogic(pieceArray[i], pieceArray[i]->getCol(), pieceArray[i]->getRow()); break;
             }
-            for (int i = 0; i < 8; i++) {
-                for (int j = 0; j < 8; j++) {
-                    if (highlightBoardMap[i][j] == activeMove && checkIfPieceIn(j, i) != NULL) {
-                        if (checkIfPieceIn(j, i)->getType() == king) {
-                            cout << endl << "check" << endl;
-                            highlightBoardMap[i][j] = notActive;
-                            break;
+            for (int j = 0; j < 8; j++) {
+                for (int k = 0; k < 8; k++) {
+                    if (highlightBoardMap[j][k] == activeMove && checkIfPieceIn(k, j) != NULL) {
+                        if (checkIfPieceIn(k, j)->getType() == king && pieceArray[i]->getColor() != checkIfPieceIn(k, j)->getColor()) {
+                            if (checkIfPieceIn(k, j)->getColor() == black) {
+                                isBlackInCheck = true;
+                            }
+                            else {
+                                isWhiteInCheck = true;
+                            }
+                            highlightBoardMap[j][k] = notActive;
                         }
                     }
-                    highlightBoardMap[i][j] = notActive;
+                    highlightBoardMap[j][k] = notActive;
                 }
             }
         }
     }
+    if (isBlackInCheck && isWhiteInCheck) {
+        gameInstance.inCheck = gameStats::both;
+    }
+    else if (isBlackInCheck) {
+        gameInstance.inCheck = gameStats::blackCheck;
+    }
+    else if (isWhiteInCheck) {
+        gameInstance.inCheck = gameStats::whiteCheck;
+    }
+    else {
+        gameInstance.inCheck = gameStats::neither;
+    }
+    
+    string color = (gameInstance.activePlayer == gameStats::black) ? "black" : "white";
+    string title = "Chess - " + color + " turn";
+    if (gameInstance.inCheck == gameStats::both) {
+        title += ", black and white in check";
+    }
+    else if (gameInstance.inCheck != gameStats::neither) {
+        title += (gameInstance.inCheck == gameStats::blackCheck) ? ", black in check" : ", white in check";
+    }
+    SDL_SetWindowTitle(win, title.c_str());
+    draw();
+    
     return true;
 }
 
@@ -198,10 +229,7 @@ void chooseMove(int col, int row) {
         activePiece->toggleFirstMove();
         draw();
         gameInstance.activePlayer = (gameInstance.activePlayer == gameStats::black) ? gameStats::white : gameStats::black;
-        
-        string color = (gameInstance.activePlayer == gameStats::black) ? "black" : "white";
-        string title = "Chess - " + color + " turn";
-        SDL_SetWindowTitle(win, title.c_str());
+    
         
         gameInstance.phase = gameStats::choosingPiece;
     }
