@@ -142,7 +142,7 @@ bool checkCheckmate() {
     else {
         gameInstance.inCheck = gameStats::neither;
     }
-    
+
     string color = (gameInstance.activePlayer == gameStats::black) ? "black" : "white";
     string title = "Chess - " + color + " turn";
     if (gameInstance.inCheck == gameStats::both) {
@@ -227,10 +227,10 @@ void chooseMove(int col, int row) {
             }
         }
         activePiece->toggleFirstMove();
-        draw();
         gameInstance.activePlayer = (gameInstance.activePlayer == gameStats::black) ? gameStats::white : gameStats::black;
-    
         
+        checkCheckmate();
+    
         gameInstance.phase = gameStats::choosingPiece;
     }
     else {
@@ -539,12 +539,10 @@ int main(int argc, const char * argv[]) {
             else if (event.type == SDL_MOUSEBUTTONDOWN) {
                 SDL_Delay(10);
                 if (gameInstance.phase == gameStats::choosingPiece) {
-                    cout << "(" << floor(event.motion.x / 50) << ", " << floor(event.motion.y / 50) << ")" << endl;
                     clicked(floor(event.motion.x / 50), floor(event.motion.y / 50));
                 }
                 else if (gameInstance.phase == gameStats::choosingMove) {
                     chooseMove(floor(event.motion.x / 50), floor(event.motion.y / 50));
-                    checkCheckmate();
                 }
             }
         }
