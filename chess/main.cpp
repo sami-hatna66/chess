@@ -25,7 +25,7 @@ void knightLogic(ChessPiece* piece, int col, int row);
 void bishopLogic(ChessPiece* piece, int col, int row);
 void queenLogic(ChessPiece* piece, int col, int row);
 void kingLogic(ChessPiece* piece, int col, int row);
-bool checkCheckmate();
+void checkCheckmate();
 
 static SDL_Window* win = NULL;
 SDL_Surface* surface = NULL;
@@ -46,6 +46,8 @@ void init() {
     SDL_Init(SDL_INIT_VIDEO);
     IMG_Init(IMG_INIT_PNG);
     win = SDL_CreateWindow("Chess - black turn", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 400, 400, SDL_WINDOW_SHOWN);
+    SDL_Surface *iconSurface = IMG_Load("appIcon.png");
+    SDL_SetWindowIcon(win, iconSurface);
 }
 
 enum boardStates {notActive, activeNotMove, activeMove};
@@ -93,7 +95,7 @@ ChessPiece* pieceArray[32] = {
     &blackPawns[6], &blackPawns[7]
 };
 
-bool checkCheckmate() {
+void checkCheckmate() {
     bool isBlackInCheck = false;
     bool isWhiteInCheck = false;
     for (int i = 0; i < 32; i++) {
@@ -153,8 +155,6 @@ bool checkCheckmate() {
     }
     SDL_SetWindowTitle(win, title.c_str());
     draw();
-    
-    return true;
 }
 
 void drawPiece(const char* imgName, int xPos, int yPos) {
