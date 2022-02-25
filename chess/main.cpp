@@ -8,6 +8,7 @@
 #include <iostream>
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_ttf.h>
 #include <vector>
 #include "pieces.hpp"
 using namespace std;
@@ -25,7 +26,8 @@ void knightLogic(ChessPiece* piece, int col, int row);
 void bishopLogic(ChessPiece* piece, int col, int row);
 void queenLogic(ChessPiece* piece, int col, int row);
 void kingLogic(ChessPiece* piece, int col, int row);
-void checkCheckmate();
+bool checkCheck(bool isDraw);
+bool checkCheckMate();
 
 static SDL_Window* win = NULL;
 SDL_Surface* surface = NULL;
@@ -45,7 +47,7 @@ gameStats gameInstance;
 void init() {
     SDL_Init(SDL_INIT_VIDEO);
     IMG_Init(IMG_INIT_PNG);
-    win = SDL_CreateWindow("Chess - black turn", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 400, 400, SDL_WINDOW_SHOWN);
+    win = SDL_CreateWindow("Chess - black turn", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 400, 450, SDL_WINDOW_SHOWN);
     SDL_Surface *iconSurface = IMG_Load("appIcon.png");
     SDL_SetWindowIcon(win, iconSurface);
 }
@@ -53,11 +55,43 @@ void init() {
 enum boardStates {notActive, activeNotMove, activeMove};
 boardStates highlightBoardMap[8][8] = {{notActive}};
 
+//vector<ChessPiece> whitePawns = {
+//    ChessPiece(1, 0, white, pawn, true), ChessPiece(1, 1, white, pawn, true),
+//    ChessPiece(1, 2, white, pawn, true), ChessPiece(1, 3, white, pawn, true),
+//    ChessPiece(1, 4, white, pawn, true), ChessPiece(1, 5, white, pawn, true),
+//    ChessPiece(1, 6, white, pawn, true), ChessPiece(1, 7, white, pawn, true),
+//};
+//
+//ChessPiece whiteRook1 = ChessPiece(0, 0, white, rook, true);
+//ChessPiece whiteRook2 = ChessPiece(0, 7, white, rook, true);
+//ChessPiece whiteKnight1 = ChessPiece(0, 1, white, knight, true);
+//ChessPiece whiteKnight2 = ChessPiece(0, 6, white, knight, true);
+//ChessPiece whiteBishop1 = ChessPiece(0, 2, white, bishop, true);
+//ChessPiece whiteBishop2 = ChessPiece(0, 5, white, bishop, true);
+//ChessPiece whiteQueen = ChessPiece(0, 3, white, queen, true);
+//ChessPiece whiteKing = ChessPiece(0, 4, white, king, true);
+//
+//vector<ChessPiece> blackPawns = {
+//    ChessPiece(6, 0, black, pawn, true), ChessPiece(6, 1, black, pawn, true),
+//    ChessPiece(6, 2, black, pawn, true), ChessPiece(6, 3, black, pawn, true),
+//    ChessPiece(6, 4, black, pawn, true), ChessPiece(6, 5, black, pawn, true),
+//    ChessPiece(6, 6, black, pawn, true), ChessPiece(6, 7, black, pawn, true),
+//};
+//
+//ChessPiece blackRook1 = ChessPiece(7, 0, black, rook, true);
+//ChessPiece blackRook2 = ChessPiece(7, 7, black, rook, true);
+//ChessPiece blackKnight1 = ChessPiece(7, 1, black, knight, true);
+//ChessPiece blackKnight2 = ChessPiece(7, 6, black, knight, true);
+//ChessPiece blackBishop1 = ChessPiece(7, 2, black, bishop, true);
+//ChessPiece blackBishop2 = ChessPiece(7, 5, black, bishop, true);
+//ChessPiece blackQueen = ChessPiece(7, 4, black, queen, true);
+//ChessPiece blackKing = ChessPiece(7, 3, black, king, true);
+
 vector<ChessPiece> whitePawns = {
     ChessPiece(1, 0, white, pawn, true), ChessPiece(1, 1, white, pawn, true),
     ChessPiece(1, 2, white, pawn, true), ChessPiece(1, 3, white, pawn, true),
-    ChessPiece(1, 4, white, pawn, true), ChessPiece(1, 5, white, pawn, true),
-    ChessPiece(1, 6, white, pawn, true), ChessPiece(1, 7, white, pawn, true),
+    ChessPiece(1, 4, white, pawn, true), ChessPiece(5, 5, white, pawn, true),
+    ChessPiece(5, 6, white, pawn, true), ChessPiece(5, 7, white, pawn, true),
 };
 
 ChessPiece whiteRook1 = ChessPiece(0, 0, white, rook, true);
@@ -82,7 +116,7 @@ ChessPiece blackKnight1 = ChessPiece(7, 1, black, knight, true);
 ChessPiece blackKnight2 = ChessPiece(7, 6, black, knight, true);
 ChessPiece blackBishop1 = ChessPiece(7, 2, black, bishop, true);
 ChessPiece blackBishop2 = ChessPiece(7, 5, black, bishop, true);
-ChessPiece blackQueen = ChessPiece(7, 4, black, queen, true);
+ChessPiece blackQueen = ChessPiece(3, 7, black, queen, true);
 ChessPiece blackKing = ChessPiece(7, 3, black, king, true);
 
 ChessPiece* pieceArray[32] = {
@@ -95,7 +129,26 @@ ChessPiece* pieceArray[32] = {
     &blackPawns[6], &blackPawns[7]
 };
 
-void checkCheckmate() {
+bool checkCheckMate() {
+    int prevPos[] = {whiteKing.getRow(), whiteKing.getCol()};
+    kingLogic(&whiteKing, whiteKing.getCol(), whiteKing.getRow());
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            if (highlightBoardMap[i][j] == activeMove) {
+                whiteKing.movePiece(j, i);
+                if (checkCheck(false)) {
+                    cout << "Checkmate";
+                }
+            }
+            highlightBoardMap[i][j] = notActive;
+        }
+    }
+    whiteKing.movePiece(prevPos[1], prevPos[0]);
+    
+    return false;
+}
+
+bool checkCheck(bool isDraw) {
     bool isBlackInCheck = false;
     bool isWhiteInCheck = false;
     for (int i = 0; i < 32; i++) {
@@ -154,7 +207,16 @@ void checkCheckmate() {
         title += (gameInstance.inCheck == gameStats::blackCheck) ? ", black in check" : ", white in check";
     }
     SDL_SetWindowTitle(win, title.c_str());
-    draw();
+    if (isDraw) {
+        draw();
+    }
+    
+    if (isWhiteInCheck || isBlackInCheck) {
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 void drawPiece(const char* imgName, int xPos, int yPos) {
@@ -229,7 +291,10 @@ void chooseMove(int col, int row) {
         activePiece->toggleFirstMove();
         gameInstance.activePlayer = (gameInstance.activePlayer == gameStats::black) ? gameStats::white : gameStats::black;
         
-        checkCheckmate();
+        bool result = checkCheck(true);
+        if (result) {
+            checkCheckMate();
+        }
     
         gameInstance.phase = gameStats::choosingPiece;
     }
@@ -282,6 +347,11 @@ void draw() {
             drawPiece(pieceArray[i]->getImgName(), pieceArray[i]->getCol(), pieceArray[i]->getRow());
         }
     }
+    
+    SDL_Rect r;
+    r.x = 0; r.y = 400; r.w = 400; r.h = 50;
+    SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
+    SDL_RenderFillRect(render, &r);
     
     SDL_RenderPresent(render);
 }

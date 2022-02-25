@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		26361A8427C9374500398F2A /* SDL2_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26361A8327C9374500398F2A /* SDL2_ttf.framework */; };
+		26361A8527C9374500398F2A /* SDL2_ttf.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 26361A8327C9374500398F2A /* SDL2_ttf.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		26361A8727C938E100398F2A /* chess.ttf in CopyFiles */ = {isa = PBXBuildFile; fileRef = 26361A8627C938C200398F2A /* chess.ttf */; };
 		263B35C927A9A2780022A79C /* blkKing.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = 263B35BB27A9999B0022A79C /* blkKing.png */; };
 		263B35CA27A9A2780022A79C /* blkRook.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = 263B35B727A9999B0022A79C /* blkRook.png */; };
 		263B35CB27A9A2780022A79C /* whtKnight.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = 263B35B827A9999B0022A79C /* whtKnight.png */; };
@@ -35,6 +38,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 7;
 			files = (
+				26361A8727C938E100398F2A /* chess.ttf in CopyFiles */,
 				26D573C927C524F6009D1D50 /* appIcon.png in CopyFiles */,
 				263B35C927A9A2780022A79C /* blkKing.png in CopyFiles */,
 				263B35CA27A9A2780022A79C /* blkRook.png in CopyFiles */,
@@ -67,6 +71,7 @@
 			dstSubfolderSpec = 10;
 			files = (
 				26B480CE27A6F2080041F56A /* SDL2_image.framework in Embed Frameworks */,
+				26361A8527C9374500398F2A /* SDL2_ttf.framework in Embed Frameworks */,
 				26B480D127A6F20B0041F56A /* SDL2.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
@@ -75,6 +80,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		26361A8327C9374500398F2A /* SDL2_ttf.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_ttf.framework; path = ../../../../Library/Frameworks/SDL2_ttf.framework; sourceTree = "<group>"; };
+		26361A8627C938C200398F2A /* chess.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = chess.ttf; sourceTree = "<group>"; };
 		263B35B727A9999B0022A79C /* blkRook.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = blkRook.png; sourceTree = "<group>"; };
 		263B35B827A9999B0022A79C /* whtKnight.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whtKnight.png; sourceTree = "<group>"; };
 		263B35B927A9999B0022A79C /* whtPawn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whtPawn.png; sourceTree = "<group>"; };
@@ -105,6 +112,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				26B480CD27A6F2080041F56A /* SDL2_image.framework in Frameworks */,
+				26361A8427C9374500398F2A /* SDL2_ttf.framework in Frameworks */,
 				26B480D027A6F20B0041F56A /* SDL2.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -115,6 +123,7 @@
 		263B35B627A9999B0022A79C /* assets */ = {
 			isa = PBXGroup;
 			children = (
+				26361A8627C938C200398F2A /* chess.ttf */,
 				26D573C827C524C4009D1D50 /* appIcon.png */,
 				263B35BB27A9999B0022A79C /* blkKing.png */,
 				263B35B727A9999B0022A79C /* blkRook.png */,
@@ -165,6 +174,7 @@
 		26B480C527A6E80E0041F56A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				26361A8327C9374500398F2A /* SDL2_ttf.framework */,
 				263B35C327A99E9E0022A79C /* CoreFoundation.framework */,
 				26B480CC27A6F2080041F56A /* SDL2_image.framework */,
 				26B480C627A6E80E0041F56A /* SDL2.framework */,
@@ -365,6 +375,7 @@
 				HEADER_SEARCH_PATHS = (
 					/Library/Frameworks/SDL2.framework/Versions/A/Headers,
 					/Library/Frameworks/SDL2_image.framework/Headers,
+					/Library/Frameworks/SDL2_ttf.framework/Versions/A/Headers/,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -385,6 +396,7 @@
 				HEADER_SEARCH_PATHS = (
 					/Library/Frameworks/SDL2.framework/Versions/A/Headers,
 					/Library/Frameworks/SDL2_image.framework/Headers,
+					/Library/Frameworks/SDL2_ttf.framework/Versions/A/Headers/,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
