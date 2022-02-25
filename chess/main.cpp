@@ -28,6 +28,7 @@ void queenLogic(ChessPiece* piece, int col, int row);
 void kingLogic(ChessPiece* piece, int col, int row);
 bool checkCheck(bool isDraw);
 bool checkCheckMate();
+void renderText(char *text, int x, int y);
 
 static SDL_Window* win = NULL;
 SDL_Surface* surface = NULL;
@@ -47,6 +48,7 @@ gameStats gameInstance;
 void init() {
     SDL_Init(SDL_INIT_VIDEO);
     IMG_Init(IMG_INIT_PNG);
+    TTF_Init();
     win = SDL_CreateWindow("Chess - black turn", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 400, 450, SDL_WINDOW_SHOWN);
     SDL_Surface *iconSurface = IMG_Load("appIcon.png");
     SDL_SetWindowIcon(win, iconSurface);
@@ -303,6 +305,16 @@ void chooseMove(int col, int row) {
     }
 }
 
+void renderText(char *inpText, int x, int y) {
+    SDL_Color textColor = { 255, 255, 255 };
+    TTF_Font *font = TTF_OpenFont("chess.ttf", 12);
+    SDL_Surface* textSurface = TTF_RenderText_Solid(font, inpText, textColor);
+    SDL_Texture* text = SDL_CreateTextureFromSurface(render, textSurface);
+    SDL_Rect r;
+    r.x = x; r.y = y; r.w = textSurface->w; r.h = textSurface->h;
+    SDL_RenderCopy(render, text, NULL, &r);
+}
+
 void draw() {
     cout << render;
     SDL_SetRenderDrawColor(render, 241, 221, 206, 255);
@@ -352,6 +364,8 @@ void draw() {
     r.x = 0; r.y = 400; r.w = 400; r.h = 50;
     SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
     SDL_RenderFillRect(render, &r);
+    
+    renderText("pog", 5, 405);
     
     SDL_RenderPresent(render);
 }
