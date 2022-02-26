@@ -10,6 +10,7 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <vector>
+#include <map>
 #include "pieces.hpp"
 using namespace std;
 
@@ -28,7 +29,7 @@ void queenLogic(ChessPiece* piece, int col, int row);
 void kingLogic(ChessPiece* piece, int col, int row);
 bool checkCheck(bool isDraw);
 bool checkCheckMate();
-void renderText(char *text, int x, int y);
+void renderText(char *text, int x, int y, string color, int h);
 
 static SDL_Window* win = NULL;
 SDL_Surface* surface = NULL;
@@ -41,6 +42,12 @@ struct gameStats {
     int prevX = -1;
     int prevY = -1;
     enum {blackCheck, whiteCheck, both, neither} inCheck = neither;
+    bool isCheckmate = false;
+};
+
+map<string, vector<int>> colorMap = {
+    { "red", {255, 0, 0} },
+    {"white", {255, 255, 255} }
 };
 
 gameStats gameInstance;
@@ -139,13 +146,14 @@ bool checkCheckMate() {
             if (highlightBoardMap[i][j] == activeMove) {
                 whiteKing.movePiece(j, i);
                 if (checkCheck(false)) {
-                    cout << "Checkmate";
+                    gameInstance.isCheckmate = true;
                 }
             }
             highlightBoardMap[i][j] = notActive;
         }
     }
     whiteKing.movePiece(prevPos[1], prevPos[0]);
+    draw();
     
     return false;
 }
@@ -187,6 +195,7 @@ bool checkCheck(bool isDraw) {
             }
         }
     }
+    
     if (isBlackInCheck && isWhiteInCheck) {
         gameInstance.inCheck = gameStats::both;
     }
@@ -296,13 +305,14 @@ void chooseMove(int col, int row) {
     }
 }
 
-void renderText(char *inpText, int x, int y) {
-    SDL_Color textColor = { 255, 255, 255 };
+void renderText(char *inpText, int x, int y, string color, int h) {
+    SDL_Color textColor = { static_cast<Uint8>(colorMap[color][0]), static_cast<Uint8>(colorMap[color][1]), static_cast<Uint8>(colorMap[color][2]) };
     TTF_Font *font = TTF_OpenFont("chess.ttf", 12);
     SDL_Surface* textSurface = TTF_RenderText_Solid(font, inpText, textColor);
     SDL_Texture* text = SDL_CreateTextureFromSurface(render, textSurface);
     SDL_Rect r;
     r.x = x; r.y = y; r.w = textSurface->w; r.h = textSurface->h;
+    if (h != 0) { r.h = h; }
     SDL_RenderCopy(render, text, NULL, &r);
 }
 
@@ -359,25 +369,31 @@ void draw() {
     
     if (gameInstance.activePlayer == gameStats::black) {
         char t[] = "Black's turn";
-        renderText(t, 5, 405);
+        renderText(t, 5, 405, "white", 0);
     }
     else {
         char t[] = "White's turn";
-        renderText(t, 5, 405);
+        renderText(t, 5, 405, "white", 0);
     }
     
     if (gameInstance.inCheck == gameStats::both) {
         char t[] = "Black and white in check";
-        renderText(t, 5, 425);
+        renderText(t, 5, 425, "white", 0);
     }
     else if (gameInstance.inCheck == gameStats::blackCheck) {
         char t[] = "Black in check";
-        renderText(t, 5, 425);
+        renderText(t, 5, 425, "white", 0);
     }
     else if (gameInstance.inCheck == gameStats::whiteCheck) {
         char t[] = "White in check";
-        renderText(t, 5, 425);
+        renderText(t, 5, 425, "white", 0);
     }
+    
+    if (gameInstance.isCheckmate) {
+        char t[] = "CHECKMATE";
+        renderText(t, 305, 402, "red", 50);
+    }
+    
     
     SDL_RenderPresent(render);
 }
