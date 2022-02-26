@@ -49,7 +49,7 @@ void init() {
     SDL_Init(SDL_INIT_VIDEO);
     IMG_Init(IMG_INIT_PNG);
     TTF_Init();
-    win = SDL_CreateWindow("Chess - black turn", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 400, 450, SDL_WINDOW_SHOWN);
+    win = SDL_CreateWindow("Chess", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 400, 450, SDL_WINDOW_SHOWN);
     SDL_Surface *iconSurface = IMG_Load("appIcon.png");
     SDL_SetWindowIcon(win, iconSurface);
 }
@@ -200,15 +200,6 @@ bool checkCheck(bool isDraw) {
         gameInstance.inCheck = gameStats::neither;
     }
 
-    string color = (gameInstance.activePlayer == gameStats::black) ? "black" : "white";
-    string title = "Chess - " + color + " turn";
-    if (gameInstance.inCheck == gameStats::both) {
-        title += ", black and white in check";
-    }
-    else if (gameInstance.inCheck != gameStats::neither) {
-        title += (gameInstance.inCheck == gameStats::blackCheck) ? ", black in check" : ", white in check";
-    }
-    SDL_SetWindowTitle(win, title.c_str());
     if (isDraw) {
         draw();
     }
@@ -365,7 +356,28 @@ void draw() {
     SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
     SDL_RenderFillRect(render, &r);
     
-    renderText("pog", 5, 405);
+    
+    if (gameInstance.activePlayer == gameStats::black) {
+        char t[] = "Black's turn";
+        renderText(t, 5, 405);
+    }
+    else {
+        char t[] = "White's turn";
+        renderText(t, 5, 405);
+    }
+    
+    if (gameInstance.inCheck == gameStats::both) {
+        char t[] = "Black and white in check";
+        renderText(t, 5, 425);
+    }
+    else if (gameInstance.inCheck == gameStats::blackCheck) {
+        char t[] = "Black in check";
+        renderText(t, 5, 425);
+    }
+    else if (gameInstance.inCheck == gameStats::whiteCheck) {
+        char t[] = "White in check";
+        renderText(t, 5, 425);
+    }
     
     SDL_RenderPresent(render);
 }
