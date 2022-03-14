@@ -93,40 +93,40 @@ boardStates highlightBoardMap[8][8] = {{notActive}};
 //ChessPiece blackKnight2 = ChessPiece(7, 6, black, knight, true);
 //ChessPiece blackBishop1 = ChessPiece(7, 2, black, bishop, true);
 //ChessPiece blackBishop2 = ChessPiece(7, 5, black, bishop, true);
-//ChessPiece blackQueen = ChessPiece(7, 4, black, queen, true);
-//ChessPiece blackKing = ChessPiece(7, 3, black, king, true);
+//ChessPiece blackQueen = ChessPiece(7, 3, black, queen, true);
+//ChessPiece blackKing = ChessPiece(7, 4, black, king, true);
 
 vector<ChessPiece> whitePawns = {
-    ChessPiece(1, 0, white, pawn, true), ChessPiece(1, 1, white, pawn, true),
-    ChessPiece(1, 2, white, pawn, true), ChessPiece(1, 3, white, pawn, true),
-    ChessPiece(1, 4, white, pawn, true), ChessPiece(5, 5, white, pawn, true),
-    ChessPiece(5, 6, white, pawn, true), ChessPiece(5, 7, white, pawn, true),
+    ChessPiece(1, 0, white, pawn, true), ChessPiece(3, 1, white, pawn, true),
+    ChessPiece(1, 2, white, pawn, false), ChessPiece(1, 3, white, pawn, false),
+    ChessPiece(3, 4, white, pawn, true), ChessPiece(1, 5, white, pawn, true),
+    ChessPiece(1, 6, white, pawn, true), ChessPiece(1, 7, white, pawn, true),
 };
 
 ChessPiece whiteRook1 = ChessPiece(0, 0, white, rook, true);
 ChessPiece whiteRook2 = ChessPiece(0, 7, white, rook, true);
 ChessPiece whiteKnight1 = ChessPiece(0, 1, white, knight, true);
-ChessPiece whiteKnight2 = ChessPiece(0, 6, white, knight, true);
-ChessPiece whiteBishop1 = ChessPiece(0, 2, white, bishop, true);
+ChessPiece whiteKnight2 = ChessPiece(2, 5, white, knight, true);
+ChessPiece whiteBishop1 = ChessPiece(0, 2, white, bishop, false);
 ChessPiece whiteBishop2 = ChessPiece(0, 5, white, bishop, true);
-ChessPiece whiteQueen = ChessPiece(0, 3, white, queen, true);
+ChessPiece whiteQueen = ChessPiece(1, 4, white, queen, true);
 ChessPiece whiteKing = ChessPiece(0, 4, white, king, true);
 
 vector<ChessPiece> blackPawns = {
     ChessPiece(6, 0, black, pawn, true), ChessPiece(6, 1, black, pawn, true),
-    ChessPiece(6, 2, black, pawn, true), ChessPiece(6, 3, black, pawn, true),
-    ChessPiece(6, 4, black, pawn, true), ChessPiece(6, 5, black, pawn, true),
+    ChessPiece(6, 2, black, pawn, true), ChessPiece(6, 3, black, pawn, false),
+    ChessPiece(4, 4, black, pawn, true), ChessPiece(6, 5, black, pawn, true),
     ChessPiece(6, 6, black, pawn, true), ChessPiece(6, 7, black, pawn, true),
 };
 
 ChessPiece blackRook1 = ChessPiece(7, 0, black, rook, true);
-ChessPiece blackRook2 = ChessPiece(7, 7, black, rook, true);
-ChessPiece blackKnight1 = ChessPiece(7, 1, black, knight, true);
+ChessPiece blackRook2 = ChessPiece(7, 7, black, rook, false);
+ChessPiece blackKnight1 = ChessPiece(7, 1, black, knight, false);
 ChessPiece blackKnight2 = ChessPiece(7, 6, black, knight, true);
-ChessPiece blackBishop1 = ChessPiece(7, 2, black, bishop, true);
-ChessPiece blackBishop2 = ChessPiece(7, 5, black, bishop, true);
-ChessPiece blackQueen = ChessPiece(3, 7, black, queen, true);
-ChessPiece blackKing = ChessPiece(7, 3, black, king, true);
+ChessPiece blackBishop1 = ChessPiece(4, 2, black, bishop, true);
+ChessPiece blackBishop2 = ChessPiece(3, 6, black, bishop, true);
+ChessPiece blackQueen = ChessPiece(5, 1, black, queen, true);
+ChessPiece blackKing = ChessPiece(7, 4, black, king, true);
 
 ChessPiece* pieceArray[32] = {
     &whiteRook1, &whiteRook2, &whiteKnight1, &whiteKnight2, &whiteBishop1,
@@ -145,7 +145,9 @@ bool checkCheckMate() {
         for (int j = 0; j < 8; j++) {
             if (highlightBoardMap[i][j] == activeMove) {
                 whiteKing.movePiece(j, i);
-                if (checkCheck(false)) {
+                checkCheck(false);
+                if (gameInstance.inCheck != gameStats::whiteCheck && gameInstance.inCheck != gameStats::both) {
+                    cout << endl << "check mate" << endl;
                     gameInstance.isCheckmate = true;
                 }
             }
@@ -153,6 +155,24 @@ bool checkCheckMate() {
         }
     }
     whiteKing.movePiece(prevPos[1], prevPos[0]);
+    
+    prevPos[0] = blackKing.getRow();
+    prevPos[1] = blackKing.getCol();
+    kingLogic(&blackKing, blackKing.getCol(), blackKing.getRow());
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            if (highlightBoardMap[i][j] == activeMove) {
+                blackKing.movePiece(j, i);
+                checkCheck(false);
+                if (gameInstance.inCheck != gameStats::blackCheck && gameInstance.inCheck != gameStats::both) {
+                    gameInstance.isCheckmate = true;
+                }
+            }
+            highlightBoardMap[i][j] = notActive;
+        }
+    }
+    blackKing.movePiece(prevPos[1], prevPos[0]);
+    
     draw();
     
     return false;
@@ -186,6 +206,7 @@ bool checkCheck(bool isDraw) {
                             }
                             else {
                                 isWhiteInCheck = true;
+
                             }
                             highlightBoardMap[j][k] = notActive;
                         }
@@ -196,20 +217,23 @@ bool checkCheck(bool isDraw) {
         }
     }
     
-    if (isBlackInCheck && isWhiteInCheck) {
-        gameInstance.inCheck = gameStats::both;
-    }
-    else if (isBlackInCheck) {
-        gameInstance.inCheck = gameStats::blackCheck;
-    }
-    else if (isWhiteInCheck) {
-        gameInstance.inCheck = gameStats::whiteCheck;
-    }
-    else {
-        gameInstance.inCheck = gameStats::neither;
-    }
-
     if (isDraw) {
+        if (isBlackInCheck && isWhiteInCheck) {
+            gameInstance.inCheck = gameStats::both;
+            cout << "both check";
+        }
+        else if (isBlackInCheck) {
+            gameInstance.inCheck = gameStats::blackCheck;
+            cout << "black check";
+        }
+        else if (isWhiteInCheck) {
+            gameInstance.inCheck = gameStats::whiteCheck;
+            cout << "white check";
+        }
+        else {
+            gameInstance.inCheck = gameStats::neither;
+        }
+        
         draw();
     }
     
