@@ -1,6 +1,6 @@
 # C++ Chess
 
-[video]
+https://user-images.githubusercontent.com/88731772/195416098-a38caf1b-54c4-4bf7-8dee-add04f14bae7.mov
 
 ## Dependencies
  - SDL2
