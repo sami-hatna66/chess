@@ -2,7 +2,8 @@
 
 Game::Game() {
     currentTurn = pieceColor::white;
-    status = gameStatus::inProgress;
+    status = gameStatus::startScreen;
+    opponent = opponents::player;
     board = std::make_shared<Board>(Board());
 }
 
@@ -21,6 +22,10 @@ void Game::setCurrentTurn(pieceColor newCurrentTurn) {
 gameStatus Game::getStatus() { return status; }
 
 void Game::setStatus(gameStatus newStatus) { status = newStatus; }
+
+opponents Game::getOpponent() { return opponent; }
+
+void Game::setOpponent(opponents newOpponent) { opponent = newOpponent; }
 
 // Called when user selects promotion choice from menu in main
 void Game::promote(pieceType chosenType) {

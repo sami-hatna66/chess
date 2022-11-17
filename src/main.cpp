@@ -103,6 +103,46 @@ void draw(SDL_Renderer *renderer, std::shared_ptr<Board> board,
         drawText(renderer, "White in check", 5, 425, {255, 255, 255});
     }
 
+    if (game->getStatus() == gameStatus::startScreen) {
+        SDL_SetRenderDrawColor(renderer, 169, 169, 169, 255);
+        r.x = 110;
+        r.y = 146;
+        r.w = 180;
+        r.h = 107;
+        SDL_RenderFillRect(renderer, &r);
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderDrawRect(renderer, &r);
+
+        drawText(renderer, "Choose Opponent:", 115, 151, {0, 0, 0});
+
+        r.x = 120; r.y = 171; r.w = 10; r.h = 10;
+        if (game->getOpponent() == opponents::player) {
+            SDL_RenderFillRect(renderer, &r);
+            r.y = 191;
+            SDL_RenderDrawRect(renderer, &r);
+        }
+        else {
+            SDL_RenderDrawRect(renderer, &r);
+            r.y = 191;
+            SDL_RenderFillRect(renderer, &r);
+        }
+
+        drawText(renderer, "Player", 135, 169, {0, 0, 0});
+        drawText(renderer, "Computer", 135, 189, {0, 0, 0});
+
+        SDL_SetRenderDrawColor(renderer, 169, 169, 169, 255);
+        r.x = 160;
+        r.y = 212;
+        r.w = 80;
+        r.h = 34;
+        SDL_RenderFillRect(renderer, &r);
+
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderDrawRect(renderer, &r);
+
+        drawText(renderer, "START", 167, 215, {0, 0, 0}, 30, 65);
+    }
+
     if (game->getStatus() == gameStatus::blackCheckmate ||
         game->getStatus() == gameStatus::whiteCheckmate) {
         drawText(renderer,
@@ -234,8 +274,25 @@ int main(int argc, char *argv[]) {
                         event.button.y >= 178 && event.button.y <= 222) {
                         replayButtonPressed = true;
                     }
-                    // Click on promotion menu
-                } else if (game.getStatus() == gameStatus::choosingPromotion) {
+                }
+                // Click on opponent selection
+                else if (game.getStatus() == gameStatus::startScreen &&
+                           event.button.x >= 120 && event.button.x <= 130 &&
+                           event.button.y >= 171 && event.button.y <= 181) {
+                            game.setOpponent(opponents::player);
+                } else if (game.getStatus() == gameStatus::startScreen &&
+                           event.button.x >= 120 && event.button.x <= 130 &&
+                           event.button.y >= 191 && event.button.y <= 201) {
+                            game.setOpponent(opponents::computer);
+                }
+                // Click on start button
+                else if (game.getStatus() == gameStatus::startScreen && 
+                         event.button.x >= 160 && event.button.x <= 240 &&
+                         event.button.y >= 212 && event.button.y <= 246) {
+                            game.setStatus(gameStatus::inProgress);
+                }
+                // Click on promotion menu
+                else if (game.getStatus() == gameStatus::choosingPromotion) {
                     if (event.button.y >= 174 && event.button.y <= 226) {
                         if (event.button.x >= 96 && event.button.x <= 148) {
                             game.promote(pieceType::Queen);

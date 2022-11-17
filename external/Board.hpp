@@ -11,6 +11,7 @@ class Piece;
 enum class pieceColor;
 
 enum class gameStatus {
+    startScreen,
     inProgress,
     blackCheck,
     whiteCheck,

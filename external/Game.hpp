@@ -5,10 +5,13 @@
 #include "Piece.hpp"
 #include "Square.hpp"
 
+enum class opponents {player, computer};
+
 class Game {
   private:
     pieceColor currentTurn;
     gameStatus status;
+    opponents opponent;
     std::shared_ptr<Board> board;
     // Previous moves stack
     // start, end, pieceMoved, pieceTaken, castlingMove, enPassantMove
@@ -24,6 +27,8 @@ class Game {
     void setCurrentTurn(pieceColor newCurrentTurn);
     gameStatus getStatus();
     void setStatus(gameStatus newStatus);
+    opponents getOpponent();
+    void setOpponent(opponents newOpponent);
     bool turn(std::shared_ptr<Square> start, std::shared_ptr<Square> end);
     std::shared_ptr<Board> getBoard();
     void promote(pieceType chosenType);
