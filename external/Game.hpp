@@ -22,6 +22,7 @@ class Game {
 
   public:
     Game();
+    Game(pieceColor pCurrentTurn, gameStatus pStatus, opponents pOpponent, std::shared_ptr<Board> pBoard);
     void resetGame();
     pieceColor getCurrentTurn();
     void setCurrentTurn(pieceColor newCurrentTurn);

@@ -149,7 +149,7 @@ gameStatus Board::isCheck(pieceColor side) {
     return gameStatus::inProgress;
 }
 // Check if colorInCheck is in checkmate
-gameStatus Board::isCheckMate(pieceColor colorInCheck) {
+gameStatus Board::isCheckMate(pieceColor colorInCheck, gameStatus prevStatus) {
     std::shared_ptr<Board> dummyBoard;
 
     // Check if any piece from colorInCheck can make a move which results in
@@ -173,9 +173,7 @@ gameStatus Board::isCheckMate(pieceColor colorInCheck) {
                         (colorInCheck == pieceColor::white &&
                          testCheck != gameStatus::whiteCheck)) {
 
-                        return colorInCheck == pieceColor::black
-                                   ? gameStatus::blackCheck
-                                   : gameStatus::whiteCheck;
+                        return prevStatus;
                     }
                 }
             }
@@ -184,4 +182,66 @@ gameStatus Board::isCheckMate(pieceColor colorInCheck) {
 
     return colorInCheck == pieceColor::black ? gameStatus::blackCheckmate
                                              : gameStatus::whiteCheckmate;
+}
+
+void Board::printBoard() {
+    for (int i = 7; i >= 0; i--) {
+        for (int j = 0; j < 8; j++) {
+            auto square = squares[i][j];
+            if (square->getPiece() == nullptr) {
+                std::cout << "o ";
+            }
+            else {
+                auto piece = square->getPiece();
+                if (piece->getColor() == pieceColor::black) {
+                    switch(piece->getPieceName()) {
+                        case pieceType::Pawn: 
+                            std::cout << "P ";
+                            break;
+                        case pieceType::Rook: 
+                            std::cout << "R ";
+                            break;
+                        case pieceType::Knight: 
+                            std::cout << "K ";
+                            break;
+                        case pieceType::Bishop: 
+                            std::cout << "B ";
+                            break;
+                        case pieceType::King: 
+                            std::cout << "K ";
+                            break;
+                        case pieceType::Queen: 
+                            std::cout << "Q ";
+                            break;
+                        default:
+                            std::cout << "err";
+                    }
+                } else {
+                    switch(piece->getPieceName()) {
+                        case pieceType::Pawn: 
+                            std::cout << "p ";
+                            break;
+                        case pieceType::Rook: 
+                            std::cout << "r ";
+                            break;
+                        case pieceType::Knight: 
+                            std::cout << "k ";
+                            break;
+                        case pieceType::Bishop: 
+                            std::cout << "b ";
+                            break;
+                        case pieceType::King: 
+                            std::cout << "k ";
+                            break;
+                        case pieceType::Queen: 
+                            std::cout << "q ";
+                            break;
+                        default:
+                            std::cout << "err";
+                    }
+                }
+            }
+        }
+        std::cout << std::endl;
+    }
 }

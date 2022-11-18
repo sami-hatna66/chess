@@ -8,3 +8,5 @@
 /external/cmake_install.cmake
 /external/Makefile
 /.DS_Store
+/external/libexternal.a
+/Chess

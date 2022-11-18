@@ -41,7 +41,7 @@ Piece::legalMoves(std::shared_ptr<Board> board,
                     dummyBoard->getSquare(currentSquare->getRow(),
                                           currentSquare->getCol()),
                     dummyBoard->getSquare(i, j))) {
-                result.push_back(std::make_pair(i, j));
+                        result.push_back(std::make_pair(i, j));
             }
         }
     }

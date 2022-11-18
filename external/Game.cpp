@@ -7,6 +7,13 @@ Game::Game() {
     board = std::make_shared<Board>(Board());
 }
 
+Game::Game(pieceColor pCurrentTurn, gameStatus pStatus, opponents pOpponent, std::shared_ptr<Board> pBoard) {
+    currentTurn = pCurrentTurn;
+    status = pStatus;
+    opponent = pOpponent;
+    board = pBoard;
+}
+
 void Game::resetGame() {
     currentTurn = pieceColor::white;
     status = gameStatus::inProgress;
@@ -59,9 +66,9 @@ void Game::promote(pieceType chosenType) {
         board->isCheck(currentTurn == pieceColor::black ? pieceColor::white
                                                         : pieceColor::black);
     if (status == gameStatus::blackCheck) {
-        status = board->isCheckMate(pieceColor::black);
-    } else if (status == gameStatus::whiteCheck) {
-        status = board->isCheckMate(pieceColor::white);
+        status = board->isCheckMate(pieceColor::black, status);
+    } else {
+        status = board->isCheckMate(pieceColor::white, status);
     }
     currentTurn = (currentTurn == pieceColor::white) ? pieceColor::black
                                                      : pieceColor::white;
@@ -145,10 +152,10 @@ void Game::undoMove() {
         status = board->isCheck(currentTurn == pieceColor::black
                                     ? pieceColor::white
                                     : pieceColor::black);
-        if (status == gameStatus::blackCheck) {
-            status = board->isCheckMate(pieceColor::black);
-        } else if (status == gameStatus::whiteCheck) {
-            status = board->isCheckMate(pieceColor::white);
+        if (currentTurn == pieceColor::white) {
+            status = board->isCheckMate(pieceColor::black, status);
+        } else {
+            status = board->isCheckMate(pieceColor::white, status);
         }
     }
 }
@@ -224,15 +231,18 @@ bool Game::turn(std::shared_ptr<Square> start, std::shared_ptr<Square> end) {
                     status = board->isCheck(currentTurn == pieceColor::black
                                                 ? pieceColor::white
                                                 : pieceColor::black);
-                    if (status == gameStatus::blackCheck) {
-                        status = board->isCheckMate(pieceColor::black);
-                    } else if (status == gameStatus::whiteCheck) {
-                        status = board->isCheckMate(pieceColor::white);
+                    if (currentTurn == pieceColor::white) {
+                        status = board->isCheckMate(pieceColor::black, status);
+                    } else {
+                        status = board->isCheckMate(pieceColor::white, status);
                     }
+
                     currentTurn = (currentTurn == pieceColor::white)
                                       ? pieceColor::black
                                       : pieceColor::white;
                 }
+            } else {
+                return false;
             }
         }
 

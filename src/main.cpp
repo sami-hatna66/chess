@@ -2,10 +2,12 @@
 #include "Game.hpp"
 #include "Piece.hpp"
 #include "Square.hpp"
+#include "Opponent.hpp"
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <iostream>
+#include <chrono>
 
 void close(SDL_Window *win, SDL_Renderer *renderer) {
     SDL_DestroyRenderer(renderer);
@@ -47,7 +49,7 @@ void drawText(SDL_Renderer *renderer, const char *text, int x, int y,
 }
 
 void draw(SDL_Renderer *renderer, std::shared_ptr<Board> board,
-          std::shared_ptr<Square> selectedSquare, Game *game,
+          std::shared_ptr<Square> selectedSquare, std::shared_ptr<Game> game,
           bool replayButtonPressed, bool showPromotionMenu) {
     SDL_SetRenderDrawColor(renderer, 241, 221, 206, 255);
     SDL_RenderClear(renderer);
@@ -235,7 +237,7 @@ int main(int argc, char *argv[]) {
     int width = 400;
     int height = 450;
 
-    auto game = Game();
+    std::shared_ptr<Game> game = std::make_shared<Game>(Game());
 
     std::shared_ptr<Square> selectedSquare = nullptr;
 
@@ -256,11 +258,26 @@ int main(int argc, char *argv[]) {
 
     bool replayButtonPressed = false;
 
-    draw(renderer, game.getBoard(), selectedSquare, &game, replayButtonPressed,
-         game.getStatus() == gameStatus::choosingPromotion);
+    draw(renderer, game->getBoard(), selectedSquare, game, replayButtonPressed,
+         game->getStatus() == gameStatus::choosingPromotion);
 
     while (!isQuit) {
-        if (SDL_PollEvent(&event)) {
+        if ((game->getStatus() == gameStatus::inProgress ||
+             game->getStatus() == gameStatus::blackCheck ||
+             game->getStatus() == gameStatus::whiteCheck) && 
+            game->getOpponent() == opponents::computer && 
+            game->getCurrentTurn() == pieceColor::black) {
+                // auto start = std::chrono::high_resolution_clock::now();
+                opponentTurn(game);
+                // auto end = std::chrono::high_resolution_clock::now();
+                // auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+                // std::cout << duration.count() << std::endl;
+                game->setCurrentTurn(pieceColor::white);
+                draw(renderer, game->getBoard(), selectedSquare, game,
+                     replayButtonPressed,
+                     game->getStatus() == gameStatus::choosingPromotion);
+            }
+        else if (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 isQuit = true;
             } else if (event.type == SDL_MOUSEBUTTONDOWN) {
@@ -268,54 +285,56 @@ int main(int argc, char *argv[]) {
                 int clickedCol = int(event.button.x / 50);
 
                 // Cease gameplay and render replay button if in checkmate
-                if (game.getStatus() == gameStatus::blackCheckmate ||
-                    game.getStatus() == gameStatus::whiteCheckmate) {
+                if (game->getStatus() == gameStatus::blackCheckmate ||
+                    game->getStatus() == gameStatus::whiteCheckmate) {
                     if (event.button.x >= 145 && event.button.x <= 255 &&
                         event.button.y >= 178 && event.button.y <= 222) {
                         replayButtonPressed = true;
                     }
                 }
                 // Click on opponent selection
-                else if (game.getStatus() == gameStatus::startScreen &&
+                else if (game->getStatus() == gameStatus::startScreen &&
                            event.button.x >= 120 && event.button.x <= 130 &&
                            event.button.y >= 171 && event.button.y <= 181) {
-                            game.setOpponent(opponents::player);
-                } else if (game.getStatus() == gameStatus::startScreen &&
+                            game->setOpponent(opponents::player);
+                } else if (game->getStatus() == gameStatus::startScreen &&
                            event.button.x >= 120 && event.button.x <= 130 &&
                            event.button.y >= 191 && event.button.y <= 201) {
-                            game.setOpponent(opponents::computer);
+                            game->setOpponent(opponents::computer);
                 }
                 // Click on start button
-                else if (game.getStatus() == gameStatus::startScreen && 
+                else if (game->getStatus() == gameStatus::startScreen && 
                          event.button.x >= 160 && event.button.x <= 240 &&
                          event.button.y >= 212 && event.button.y <= 246) {
-                            game.setStatus(gameStatus::inProgress);
+                            game->setStatus(gameStatus::inProgress);
                 }
                 // Click on promotion menu
-                else if (game.getStatus() == gameStatus::choosingPromotion) {
+                else if (game->getStatus() == gameStatus::choosingPromotion) {
                     if (event.button.y >= 174 && event.button.y <= 226) {
                         if (event.button.x >= 96 && event.button.x <= 148) {
-                            game.promote(pieceType::Queen);
+                            game->promote(pieceType::Queen);
                         } else if (event.button.x >= 148 &&
                                    event.button.x <= 200) {
-                            game.promote(pieceType::Rook);
+                            game->promote(pieceType::Rook);
                         } else if (event.button.x >= 200 &&
                                    event.button.x <= 252) {
-                            game.promote(pieceType::Bishop);
+                            game->promote(pieceType::Bishop);
                         } else if (event.button.x >= 252 &&
                                    event.button.x <= 304) {
-                            game.promote(pieceType::Knight);
+                            game->promote(pieceType::Knight);
                         }
                     }
-                    // Click on undo move button
-                } else if (event.button.x >= 344 && event.button.x <= 388 &&
+                }
+                // Click on undo move button 
+                else if (event.button.x >= 344 && event.button.x <= 388 &&
                            event.button.y >= 415 && event.button.y <= 434) {
-                    game.undoMove();
-                    // Click on chess board
-                } else if (clickedCol >= 0 && clickedCol <= 7 &&
+                    game->undoMove();
+                } 
+                // Click on chess board
+                else if (clickedCol >= 0 && clickedCol <= 7 &&
                            clickedRow >= 0 && clickedRow <= 7) {
                     auto clickedSquare =
-                        game.getBoard()->getSquare(clickedRow, clickedCol);
+                        game->getBoard()->getSquare(clickedRow, clickedCol);
                     // Deselect square if clicked for second time
                     if (clickedSquare == selectedSquare) {
                         selectedSquare = nullptr;
@@ -325,31 +344,31 @@ int main(int argc, char *argv[]) {
                     else if (selectedSquare == nullptr &&
                              clickedSquare->getPiece() != nullptr &&
                              clickedSquare->getPiece()->getColor() ==
-                                 game.getCurrentTurn()) {
+                                 game->getCurrentTurn()) {
                         selectedSquare = clickedSquare;
                     }
                     // If a square has been selected, clicked square is end
                     // square of move
                     else if (selectedSquare != nullptr &&
-                             game.turn(selectedSquare, clickedSquare)) {
+                             game->turn(selectedSquare, clickedSquare)) {
                         selectedSquare = nullptr;
                     }
                 }
 
-                draw(renderer, game.getBoard(), selectedSquare, &game,
+                draw(renderer, game->getBoard(), selectedSquare, game,
                      replayButtonPressed,
-                     game.getStatus() == gameStatus::choosingPromotion);
+                     game->getStatus() == gameStatus::choosingPromotion);
             } else if (event.type == SDL_MOUSEBUTTONUP) {
                 // Start new game if replay button is pressed
                 if (replayButtonPressed) {
                     replayButtonPressed = false;
-                    draw(renderer, game.getBoard(), selectedSquare, &game,
+                    draw(renderer, game->getBoard(), selectedSquare, game,
                          replayButtonPressed,
-                         game.getStatus() == gameStatus::choosingPromotion);
-                    game.resetGame();
-                    draw(renderer, game.getBoard(), selectedSquare, &game,
+                         game->getStatus() == gameStatus::choosingPromotion);
+                    game->resetGame();
+                    draw(renderer, game->getBoard(), selectedSquare, game,
                          replayButtonPressed,
-                         game.getStatus() == gameStatus::choosingPromotion);
+                         game->getStatus() == gameStatus::choosingPromotion);
                 }
             }
         }

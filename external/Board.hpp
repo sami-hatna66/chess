@@ -27,7 +27,6 @@ class Board : public std::enable_shared_from_this<Board> {
   public:
     Board();
     Board(std::array<std::array<std::shared_ptr<Square>, 8>, 8> pSquares);
-    void printBoard();
     void resetBoard();
     std::shared_ptr<Square> getSquare(int row, int col);
     std::array<std::array<std::shared_ptr<Square>, 8>, 8> getSquares();
@@ -35,7 +34,8 @@ class Board : public std::enable_shared_from_this<Board> {
     void movePiece(std::shared_ptr<Square> start, std::shared_ptr<Square> end,
                    std::shared_ptr<Piece> piece);
     gameStatus isCheck(pieceColor side);
-    gameStatus isCheckMate(pieceColor colorInCheck);
+    gameStatus isCheckMate(pieceColor colorInCheck, gameStatus prevStatus);
+    void printBoard();
 };
 
 #endif
