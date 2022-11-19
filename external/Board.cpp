@@ -101,6 +101,10 @@ void Board::resetBoard() {
             }
         }
     }
+
+    // row, col
+    blackKingPos = std::make_pair<int, int>(7, 4);
+    whiteKingPos = std::make_pair<int, int>(0, 4);
 }
 
 std::shared_ptr<Square> Board::getSquare(int row, int col) {
@@ -109,6 +113,10 @@ std::shared_ptr<Square> Board::getSquare(int row, int col) {
 
 std::array<std::array<std::shared_ptr<Square>, 8>, 8> Board::getSquares() {
     return squares;
+}
+
+void Board::setSquares(std::array<std::array<std::shared_ptr<Square>, 8>, 8> newSquares) {
+    squares = newSquares;
 }
 
 std::array<std::array<std::shared_ptr<Square>, 8>, 8> *Board::getBoard() {
@@ -121,6 +129,14 @@ void Board::movePiece(std::shared_ptr<Square> start,
     squares[end->getRow()][end->getCol()]->setPiece(
         std::move(squares[start->getRow()][start->getCol()]->getPiece()));
     squares[start->getRow()][start->getCol()]->setPiece(nullptr);
+
+    if (piece->getPieceName() == pieceType::King) {
+        if (piece->getColor() == pieceColor::black) {
+            blackKingPos = std::make_pair<int, int>(end->getRow(), end->getCol());
+        } else {
+            whiteKingPos = std::make_pair<int, int>(end->getRow(), end->getCol());
+        }
+    }
 }
 
 // Check if side is in check
@@ -182,6 +198,22 @@ gameStatus Board::isCheckMate(pieceColor colorInCheck, gameStatus prevStatus) {
 
     return colorInCheck == pieceColor::black ? gameStatus::blackCheckmate
                                              : gameStatus::whiteCheckmate;
+}
+
+std::pair<int, int> Board::getBlackKingPos() {
+    return blackKingPos;
+}
+
+void Board::setBlackKingPos(std::pair<int, int> newPos) {
+    blackKingPos = newPos;
+}
+
+std::pair<int, int> Board::getWhiteKingPos() {
+    return whiteKingPos;
+}
+
+void Board::setWhiteKingPos(std::pair<int, int> newPos) {
+    whiteKingPos = newPos;
 }
 
 void Board::printBoard() {

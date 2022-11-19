@@ -439,23 +439,21 @@ bool Queen::canMove(std::shared_ptr<Board> board, std::shared_ptr<Square> start,
     int startRow = start->getRow();
     int endCol = end->getCol();
     int endRow = end->getRow();
-    // Create copy of board, replace queen with rook and test move's legality
-    std::shared_ptr<Board> dummyBoard =
-        std::make_shared<Board>(Board(board->getSquares()));
-    std::shared_ptr<Square> dummyStart =
-        dummyBoard->getSquare(start->getRow(), start->getCol());
-    std::shared_ptr<Square> dummyEnd =
-        dummyBoard->getSquare(end->getRow(), end->getCol());
-    std::shared_ptr<Rook> dummyRook =
-        std::make_shared<Rook>(Rook(this->getColor(), false));
-    dummyBoard->getSquare(startRow, startCol)->setPiece(dummyRook);
 
-    if (dummyRook->canMove(dummyBoard, dummyStart, dummyEnd)) {
+    std::shared_ptr<Rook> dummyRook = std::make_shared<Rook>(Rook(this->getColor(), false));
+    board->getSquare(startRow, startCol)->setPiece(dummyRook);
+    if (dummyRook->canMove(board, board->getSquare(startRow, startCol), board->getSquare(endRow, endCol))) {
+        board->getSquare(startRow, startCol)->setPiece(std::make_shared<Queen>(Queen(this->getColor())));
         return true;
     } else {
-        // If move isn't valid for rook, do same with bishop
-        std::shared_ptr<Bishop> dummyBishop =
-            std::make_shared<Bishop>(Bishop(this->getColor()));
-        return dummyBishop->canMove(dummyBoard, dummyStart, dummyEnd);
+        std::shared_ptr<Bishop> dummyBishop = std::make_shared<Bishop>(Bishop(this->getColor()));
+        board->getSquare(startRow, startCol)->setPiece(dummyBishop);
+        if (dummyBishop->canMove(board, board->getSquare(startRow, startCol), board->getSquare(endRow, endCol))) {
+            board->getSquare(startRow, startCol)->setPiece(std::make_shared<Queen>(Queen(this->getColor())));
+            return true;
+        } else {
+            board->getSquare(startRow, startCol)->setPiece(std::make_shared<Queen>(Queen(this->getColor())));
+            return false;
+        }
     }
 }

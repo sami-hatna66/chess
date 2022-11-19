@@ -31,13 +31,14 @@ void opponentTurn(std::shared_ptr<Game> game) {
 
     std::array<int, 4> bestMove;
     int bestScore = -99999999;
-    int depth = 2;
+    int depth = 3;
     bool isMaximisingPlayer = true;
     for (auto move : aiMoves) {
         auto dummyBoard = std::make_shared<Board>(Board(board->getSquares()));
         auto dummyGame = std::make_shared<Game>(Game(game->getCurrentTurn(), game->getStatus(), game->getOpponent(), dummyBoard));
         if (dummyGame->turn(dummyBoard->getSquare(move[0], move[1]), dummyBoard->getSquare(move[2], move[3]))) {
             int moveScore = miniMax(depth - 1, dummyGame, !isMaximisingPlayer, -10000, 10000);
+            std::cout << moveScore << std::endl;
             if (moveScore >= bestScore) {
                 bestMove = move;
                 bestScore = moveScore;
@@ -59,15 +60,23 @@ int miniMax(int depth, std::shared_ptr<Game> game, bool isMaximising, int alpha,
 
     auto aiMoves = getAiMoves(game, (isMaximising ? pieceColor::black : pieceColor::white));
 
+    // auto cacheSquares = board->getSquares();
+    // auto cacheTurn = game->getCurrentTurn();
+    // auto cacheStatus = game->getStatus();
+    // auto cacheOpponent = game->getOpponent();
+
     if (isMaximising) {
         int bestScore = -99999999;
         for (auto move : aiMoves) {
-            auto dummyBoard = std::make_shared<Board>(Board(board->getSquares()));
-            auto dummyGame = std::make_shared<Game>(Game(game->getCurrentTurn(), game->getStatus(), game->getOpponent(), dummyBoard));
-            auto turn = dummyGame->turn(dummyBoard->getSquare(move[0], move[1]), dummyBoard->getSquare(move[2], move[3]));
+            // board->setSquares(cacheSquares);
+            // game->setCurrentTurn(cacheTurn);
+            // game->setStatus(cacheStatus);
+            // game->setOpponent(cacheOpponent);
+            auto turn = game->turn(board->getSquare(move[0], move[1]), board->getSquare(move[2], move[3]));
             if (turn) {
-                bestScore = std::max(bestScore, miniMax(depth - 1, dummyGame, !isMaximising, alpha, beta));
+                bestScore = std::max(bestScore, miniMax(depth - 1, game, !isMaximising, alpha, beta));
                 alpha = std::max(alpha, bestScore);
+                game->undoMove();
                 if (beta <= alpha) {
                     return bestScore;
                 }
@@ -77,12 +86,15 @@ int miniMax(int depth, std::shared_ptr<Game> game, bool isMaximising, int alpha,
     } else {
         int bestScore = 99999999;
         for (auto move : aiMoves) {
-            auto dummyBoard = std::make_shared<Board>(Board(board->getSquares()));
-            auto dummyGame = std::make_shared<Game>(Game(game->getCurrentTurn(), game->getStatus(), game->getOpponent(), dummyBoard));
-            auto turn = dummyGame->turn(dummyBoard->getSquare(move[0], move[1]), dummyBoard->getSquare(move[2], move[3]));
+            // board->setSquares(cacheSquares);
+            // game->setCurrentTurn(cacheTurn);
+            // game->setStatus(cacheStatus);
+            // game->setOpponent(cacheOpponent);
+            auto turn = game->turn(board->getSquare(move[0], move[1]), board->getSquare(move[2], move[3]));
             if (turn) {
-                bestScore = std::min(bestScore, miniMax(depth - 1, dummyGame, !isMaximising, alpha, beta));
+                bestScore = std::min(bestScore, miniMax(depth - 1, game, !isMaximising, alpha, beta));
                 beta = std::min(beta, bestScore);
+                game->undoMove();
                 if (beta <= alpha) {
                     return bestScore;
                 }

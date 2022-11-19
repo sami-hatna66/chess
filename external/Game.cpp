@@ -3,7 +3,7 @@
 Game::Game() {
     currentTurn = pieceColor::white;
     status = gameStatus::startScreen;
-    opponent = opponents::player;
+    opponent = opponents::computer;
     board = std::make_shared<Board>(Board());
 }
 
@@ -86,11 +86,11 @@ void Game::undoMove() {
         auto pieceTaken = std::get<3>(latestTurn);
         auto castlingMove = std::get<4>(latestTurn);
         auto enPassantMove = std::get<5>(latestTurn);
+        auto moveStatus = std::get<6>(latestTurn);
         moves.pop_back();
 
         // Return moved piece to previous square
-        board->getSquare(start->getRow(), start->getCol())
-            ->setPiece(pieceMoved);
+        board->movePiece(end, start, pieceMoved);
         // If a piece was taken, bring it back into play
         board->getSquare(end->getRow(), end->getCol())->setPiece(pieceTaken);
 
@@ -149,14 +149,7 @@ void Game::undoMove() {
 
         // Perform same check and mate reviews for reverted board
         currentTurn = std::get<2>(latestTurn)->getColor();
-        status = board->isCheck(currentTurn == pieceColor::black
-                                    ? pieceColor::white
-                                    : pieceColor::black);
-        if (currentTurn == pieceColor::white) {
-            status = board->isCheckMate(pieceColor::black, status);
-        } else {
-            status = board->isCheckMate(pieceColor::white, status);
-        }
+        status = moveStatus;
     }
 }
 
@@ -200,7 +193,7 @@ bool Game::turn(std::shared_ptr<Square> start, std::shared_ptr<Square> end) {
                 if (start->getPiece()->getPieceName() == pieceType::King &&
                     std::abs(start->getCol() - end->getCol()) == 2) {
                     moves.push_back({start, end, start->getPiece(),
-                                     end->getPiece(), true, false});
+                                     end->getPiece(), true, false, gameStatus::inProgress});
                 }
                 // If move was en passant
                 else if (start->getPiece() != nullptr &&
@@ -209,12 +202,12 @@ bool Game::turn(std::shared_ptr<Square> start, std::shared_ptr<Square> end) {
                           end->getCol() == start->getCol() + 1) &&
                          end->getPiece() == nullptr) {
                     moves.push_back({start, end, start->getPiece(),
-                                     end->getPiece(), false, true});
+                                     end->getPiece(), false, true, gameStatus::inProgress});
                 }
                 // All other moves
                 else {
                     moves.push_back({start, end, start->getPiece(),
-                                     end->getPiece(), false, false});
+                                     end->getPiece(), false, false, gameStatus::inProgress});
                 }
 
                 board->movePiece(start, end, piece);
@@ -236,6 +229,9 @@ bool Game::turn(std::shared_ptr<Square> start, std::shared_ptr<Square> end) {
                     } else {
                         status = board->isCheckMate(pieceColor::white, status);
                     }
+
+                    auto latestTurn = moves.back();
+                    std::get<6>(latestTurn) = status;
 
                     currentTurn = (currentTurn == pieceColor::white)
                                       ? pieceColor::black

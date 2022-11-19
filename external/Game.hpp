@@ -14,10 +14,10 @@ class Game {
     opponents opponent;
     std::shared_ptr<Board> board;
     // Previous moves stack
-    // start, end, pieceMoved, pieceTaken, castlingMove, enPassantMove
+    // start, end, pieceMoved, pieceTaken, castlingMove, enPassantMove, status
     std::vector<
         std::tuple<std::shared_ptr<Square>, std::shared_ptr<Square>,
-                   std::shared_ptr<Piece>, std::shared_ptr<Piece>, bool, bool>>
+                   std::shared_ptr<Piece>, std::shared_ptr<Piece>, bool, bool, gameStatus>>
         moves;
 
   public:
