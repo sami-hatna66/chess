@@ -267,11 +267,12 @@ int main(int argc, char *argv[]) {
              game->getStatus() == gameStatus::whiteCheck) && 
             game->getOpponent() == opponents::computer && 
             game->getCurrentTurn() == pieceColor::black) {
-                // auto start = std::chrono::high_resolution_clock::now();
+                auto start = std::chrono::high_resolution_clock::now();
                 opponentTurn(game);
-                // auto end = std::chrono::high_resolution_clock::now();
-                // auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-                // std::cout << duration.count() << std::endl;
+                auto end = std::chrono::high_resolution_clock::now();
+                auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+                std::cout << duration.count() << std::endl;
+                
                 game->setCurrentTurn(pieceColor::white);
                 draw(renderer, game->getBoard(), selectedSquare, game,
                      replayButtonPressed,

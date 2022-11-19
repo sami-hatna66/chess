@@ -45,6 +45,7 @@ Piece::legalMoves(std::shared_ptr<Board> board,
             }
         }
     }
+    std::reverse(result.begin(), result.end());
     return result;
 }
 
