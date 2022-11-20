@@ -147,13 +147,21 @@ void Game::undoMove() {
                          true, true)));
         }
 
+        // if (pieceMoved->getPieceName() == pieceType::King) {
+        //     if (pieceMoved->getColor() == pieceColor::black) {
+        //         board->setBlackKingPos(std::make_pair<int, int>(start->getRow(), start->getCol()));
+        //     } else {
+        //         board->setWhiteKingPos(std::make_pair<int, int>(start->getRow(), start->getCol()));
+        //     }
+        // }
+
         // Perform same check and mate reviews for reverted board
         currentTurn = std::get<2>(latestTurn)->getColor();
         status = moveStatus;
     }
 }
 
-bool Game::turn(std::shared_ptr<Square> start, std::shared_ptr<Square> end) {
+bool Game::turn(std::shared_ptr<Square> start, std::shared_ptr<Square> end, bool dummyFlag) {
     auto piece = start->getPiece();
 
     if (piece != nullptr && piece->getColor() == currentTurn) {
@@ -174,6 +182,19 @@ bool Game::turn(std::shared_ptr<Square> start, std::shared_ptr<Square> end) {
                 (currentTurn == pieceColor::white &&
                  testCheck != gameStatus::whiteCheck)) {
 
+                if (piece->getPieceName() == pieceType::Pawn) {
+                    if (piece->getIsFirstMove() && std::abs(end->getRow() - start->getRow()) == 2) {
+                        piece->setVulnerableToEnPassant(true);
+                    }
+
+                    piece->setIsFirstMove(false);
+
+                    if ((piece->getColor() == pieceColor::white && end->getRow() == 7) || 
+                        (piece->getColor() == pieceColor::black && end->getRow() == 0)) {
+                            piece->setCanPromote(true);
+                        }
+                }
+
                 for (int i = 0; i < 8; i++) {
                     for (int j = 0; j < 8; j++) {
                         auto piece = board->getSquare(i, j)->getPiece();
@@ -187,6 +208,18 @@ bool Game::turn(std::shared_ptr<Square> start, std::shared_ptr<Square> end) {
                         }
                     }
                 }
+
+                if (piece->getPieceName() == pieceType::Rook || piece->getPieceName() == pieceType::King) {
+                    piece->setCanCastle(false);
+                }
+
+                // if (piece->getPieceName() == pieceType::King) {
+                //     if (piece->getColor() == pieceColor::black) {
+                //         board->setBlackKingPos(std::make_pair<int, int>(end->getRow(), end->getCol()));
+                //     } else {
+                //         board->setWhiteKingPos(std::make_pair<int, int>(end->getRow(), end->getCol()));
+                //     }
+                // }
 
                 // Record move
                 // If move was castling
@@ -224,10 +257,12 @@ bool Game::turn(std::shared_ptr<Square> start, std::shared_ptr<Square> end) {
                     status = board->isCheck(currentTurn == pieceColor::black
                                                 ? pieceColor::white
                                                 : pieceColor::black);
-                    if (currentTurn == pieceColor::white) {
-                        status = board->isCheckMate(pieceColor::black, status);
-                    } else {
-                        status = board->isCheckMate(pieceColor::white, status);
+                    if (!dummyFlag) {
+                        if (currentTurn == pieceColor::white) {
+                            status = board->isCheckMate(pieceColor::black, status);
+                        } else {
+                            status = board->isCheckMate(pieceColor::white, status);
+                        }
                     }
 
                     auto latestTurn = moves.back();

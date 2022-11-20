@@ -26,21 +26,14 @@ std::vector<std::pair<int, int>>
 Piece::legalMoves(std::shared_ptr<Board> board,
                   std::shared_ptr<Square> currentSquare) {
     std::vector<std::pair<int, int>> result;
-    std::shared_ptr<Board> dummyBoard =
-        std::make_shared<Board>(Board(board->getSquares()));
-    auto dummyThis =
-        dummyBoard->getSquare(currentSquare->getRow(), currentSquare->getCol())
-            ->getPiece();
     for (int i = 0; i <= 7; i++) {
         for (int j = 0; j <= 7; j++) {
-            if (std::make_pair(i, j) !=
-                    std::make_pair(currentSquare->getRow(),
-                                   currentSquare->getCol()) &&
-                dummyThis->canMove(
-                    dummyBoard,
-                    dummyBoard->getSquare(currentSquare->getRow(),
+            if ((i != currentSquare->getRow() || j != currentSquare->getCol()) &&
+                this->canMove(
+                    board,
+                    board->getSquare(currentSquare->getRow(),
                                           currentSquare->getCol()),
-                    dummyBoard->getSquare(i, j))) {
+                    board->getSquare(i, j))) {
                         result.push_back(std::make_pair(i, j));
             }
         }
@@ -106,12 +99,6 @@ bool Pawn::canMove(std::shared_ptr<Board> board, std::shared_ptr<Square> start,
             if (end->getPiece() != nullptr) {
                 return false;
             } else {
-                isFirstMove = false;
-                // Pawn can promote if it reaches furthermost square
-                if ((this->getColor() == pieceColor::white && endRow == 7) ||
-                    (this->getColor() == pieceColor::black && endRow == 0)) {
-                    this->setCanPromote(true);
-                }
                 return true;
             }
             // Only move two squares if first move
@@ -123,12 +110,6 @@ bool Pawn::canMove(std::shared_ptr<Board> board, std::shared_ptr<Square> start,
             } else {
                 // Pawn can be taken in en passant immediately after its first
                 // move
-                vulnerableToEnPassant = true;
-                isFirstMove = false;
-                if ((this->getColor() == pieceColor::white && endRow == 7) ||
-                    (this->getColor() == pieceColor::black && endRow == 0)) {
-                    this->setCanPromote(true);
-                }
                 return true;
             }
         } else {
@@ -141,11 +122,6 @@ bool Pawn::canMove(std::shared_ptr<Board> board, std::shared_ptr<Square> start,
             end->getPiece() != nullptr &&
             end->getPiece()->getColor() != this->getColor()) {
             end->getPiece()->setAlive(false);
-            isFirstMove = false;
-            if ((this->getColor() == pieceColor::white && endRow == 7) ||
-                (this->getColor() == pieceColor::black && endRow == 0)) {
-                this->setCanPromote(true);
-            }
             return true;
         }
         // En passant take
@@ -159,11 +135,6 @@ bool Pawn::canMove(std::shared_ptr<Board> board, std::shared_ptr<Square> start,
                 pieceBehind->isVulnerableToEnPassant()) {
                 pieceBehind->setAlive(false);
                 board->getSquare(startRow, endCol)->setPiece(nullptr);
-                isFirstMove = false;
-                if ((this->getColor() == pieceColor::white && endRow == 7) ||
-                    (this->getColor() == pieceColor::black && endRow == 0)) {
-                    this->setCanPromote(true);
-                }
                 return true;
             } else {
                 return false;
@@ -236,7 +207,6 @@ bool Rook::canMove(std::shared_ptr<Board> board, std::shared_ptr<Square> start,
             return false;
         } else {
             // Rook can't perform castling if it has already moved
-            canCastle = false;
             return true;
         }
     } else {
@@ -265,19 +235,19 @@ bool Knight::canMove(std::shared_ptr<Board> board,
     int endRow = end->getRow();
 
     // List of squares rook can move to relative from start position
-    std::array<std::pair<int, int>, 8> validMoves = {
-        std::make_pair(startRow + 2, startCol + 1),
-        std::make_pair(startRow + 1, startCol + 2),
-        std::make_pair(startRow - 1, startCol + 2),
-        std::make_pair(startRow - 2, startCol + 1),
-        std::make_pair(startRow - 2, startCol - 1),
-        std::make_pair(startRow - 1, startCol - 2),
-        std::make_pair(startRow + 1, startCol - 2),
-        std::make_pair(startRow + 2, startCol - 1)};
+    std::array<std::array<int, 2>, 8> validMoves = {{
+        {startRow + 2, startCol + 1},
+        {startRow + 1, startCol + 2},
+        {startRow - 1, startCol + 2},
+        {startRow - 2, startCol + 1},
+        {startRow - 2, startCol - 1},
+        {startRow - 1, startCol - 2},
+        {startRow + 1, startCol - 2},
+        {startRow + 2, startCol - 1}}};
 
     if (std::any_of(validMoves.begin(), validMoves.end(),
-                    [&](std::pair<int, int> move) {
-                        return move.first == endRow && move.second == endCol;
+                    [&](std::array<int, 2> move) {
+                        return move[0] == endRow && move[1] == endCol;
                     })) {
         if (board->getSquare(endRow, endCol)->getPiece() != nullptr &&
             board->getSquare(endRow, endCol)->getPiece()->getColor() ==
@@ -369,11 +339,9 @@ bool King::canMove(std::shared_ptr<Board> board, std::shared_ptr<Square> start,
         (rowDifference == 0 && colDifference == 1) ||
         (rowDifference == 1 && colDifference == 1)) {
         if (board->getSquare(endRow, endCol)->getPiece() == nullptr) {
-            canCastle = false;
             return true;
         } else if (board->getSquare(endRow, endCol)->getPiece()->getColor() !=
                    this->getColor()) {
-            canCastle = false;
             return true;
         }
     }
@@ -412,7 +380,6 @@ bool King::canMove(std::shared_ptr<Board> board, std::shared_ptr<Square> start,
             rookDestination->setPiece(
                 board->getSquare(rookPos.first, rookPos.second)->getPiece());
             board->getSquare(rookPos.first, rookPos.second)->setPiece(nullptr);
-            canCastle = false;
             return true;
         }
 

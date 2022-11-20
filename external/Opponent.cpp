@@ -16,8 +16,10 @@ std::vector<std::array<int, 4>> getAiMoves(std::shared_ptr<Game> game, pieceColo
     // startRow, startCol, endRow, endCol
     std::vector<std::array<int, 4>> aiMoves;
     for (auto startSquare : aiSquares) {
-        for (auto endSquare : startSquare->getPiece()->legalMoves(board, startSquare)) {
-            aiMoves.push_back({startSquare->getRow(), startSquare->getCol(), endSquare.first, endSquare.second});
+        if (startSquare->getPiece() != nullptr) {
+            for (auto endSquare : startSquare->getPiece()->legalMoves(board, startSquare)) {
+                aiMoves.push_back({startSquare->getRow(), startSquare->getCol(), endSquare.first, endSquare.second});
+            }
         }
     }
 
@@ -60,18 +62,9 @@ int miniMax(int depth, std::shared_ptr<Game> game, bool isMaximising, int alpha,
 
     auto aiMoves = getAiMoves(game, (isMaximising ? pieceColor::black : pieceColor::white));
 
-    // auto cacheSquares = board->getSquares();
-    // auto cacheTurn = game->getCurrentTurn();
-    // auto cacheStatus = game->getStatus();
-    // auto cacheOpponent = game->getOpponent();
-
     if (isMaximising) {
         int bestScore = -99999999;
         for (auto move : aiMoves) {
-            // board->setSquares(cacheSquares);
-            // game->setCurrentTurn(cacheTurn);
-            // game->setStatus(cacheStatus);
-            // game->setOpponent(cacheOpponent);
             auto turn = game->turn(board->getSquare(move[0], move[1]), board->getSquare(move[2], move[3]));
             if (turn) {
                 bestScore = std::max(bestScore, miniMax(depth - 1, game, !isMaximising, alpha, beta));
@@ -86,10 +79,6 @@ int miniMax(int depth, std::shared_ptr<Game> game, bool isMaximising, int alpha,
     } else {
         int bestScore = 99999999;
         for (auto move : aiMoves) {
-            // board->setSquares(cacheSquares);
-            // game->setCurrentTurn(cacheTurn);
-            // game->setStatus(cacheStatus);
-            // game->setOpponent(cacheOpponent);
             auto turn = game->turn(board->getSquare(move[0], move[1]), board->getSquare(move[2], move[3]));
             if (turn) {
                 bestScore = std::min(bestScore, miniMax(depth - 1, game, !isMaximising, alpha, beta));

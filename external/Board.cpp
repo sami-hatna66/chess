@@ -36,6 +36,11 @@ Board::Board(std::array<std::array<std::shared_ptr<Square>, 8>, 8> pSquares) {
                     Square(i, j,
                            std::make_shared<King>(King(
                                piece->getColor(), piece->getCanCastle()))));
+                if (piece->getColor() == pieceColor::black) {
+                    blackKingPos = std::make_pair(i, j);
+                } else {
+                    whiteKingPos = std::make_pair(i, j);
+                }
             }
         }
     }
@@ -146,24 +151,37 @@ gameStatus Board::isCheck(pieceColor side) {
         for (int j = 0; j < 8; j++) {
             auto piece = squares[i][j]->getPiece();
             if (piece != nullptr && piece->getColor() != side) {
-                auto possibleMoves =
-                    piece->legalMoves(shared_from_this(), squares[i][j]);
-                for (auto move : possibleMoves) {
-                    auto endPiece =
-                        squares[move.first][move.second]->getPiece();
-                    if (endPiece != nullptr &&
-                        endPiece->getPieceName() == pieceType::King &&
-                        endPiece->getColor() == side) {
-                        return side == pieceColor::black
-                                   ? gameStatus::blackCheck
-                                   : gameStatus::whiteCheck;
-                    }
+                // auto possibleMoves =
+                //     piece->legalMoves(shared_from_this(), squares[i][j]);
+                // for (auto move : possibleMoves) {
+                //     auto endPiece =
+                //         squares[move.first][move.second]->getPiece();
+                //     if (endPiece != nullptr &&
+                //         endPiece->getPieceName() == pieceType::King &&
+                //         endPiece->getColor() == side) {
+                //         return side == pieceColor::black
+                //                    ? gameStatus::blackCheck
+                //                    : gameStatus::whiteCheck;
+                //     }
+                // }
+                // std::cout << (squares[blackKingPos.first][blackKingPos.second]->getPiece()->getPieceName() == pieceType::King &&
+                //     squares[blackKingPos.first][blackKingPos.second]->getPiece()->getColor() == pieceColor::black) << std::endl;
+                // std::cout << (squares[whiteKingPos.first][whiteKingPos.second]->getPiece()->getPieceName() == pieceType::King &&
+                //     squares[whiteKingPos.first][whiteKingPos.second]->getPiece()->getColor() == pieceColor::white) << std::endl;
+
+                if (side == pieceColor::black && 
+                    piece->canMove(shared_from_this(), squares[i][j], squares[blackKingPos.first][blackKingPos.second])) {
+                        return gameStatus::blackCheck;
+                } else if (side == pieceColor::white &&
+                           piece->canMove(shared_from_this(), squares[i][j], squares[whiteKingPos.first][whiteKingPos.second])) {
+                            return gameStatus::whiteCheck;
                 }
             }
         }
     }
     return gameStatus::inProgress;
 }
+
 // Check if colorInCheck is in checkmate
 gameStatus Board::isCheckMate(pieceColor colorInCheck, gameStatus prevStatus) {
     std::shared_ptr<Board> dummyBoard;
@@ -179,6 +197,7 @@ gameStatus Board::isCheckMate(pieceColor colorInCheck, gameStatus prevStatus) {
 
                 for (auto move : possibleMoves) {
                     dummyBoard = std::make_shared<Board>(Board(squares));
+                    auto piece = dummyBoard->getSquare(i, j)->getPiece();
                     dummyBoard->movePiece(
                         dummyBoard->getSquare(i, j),
                         dummyBoard->getSquare(move.first, move.second),

@@ -5,9 +5,9 @@
 #include "Piece.hpp"
 #include "Square.hpp"
 
-enum class opponents {player, computer};
+enum class opponents {computer, player};
 
-class Game {
+class Game : public std::enable_shared_from_this<Game> {
   private:
     pieceColor currentTurn;
     gameStatus status;
@@ -30,7 +30,7 @@ class Game {
     void setStatus(gameStatus newStatus);
     opponents getOpponent();
     void setOpponent(opponents newOpponent);
-    bool turn(std::shared_ptr<Square> start, std::shared_ptr<Square> end);
+    bool turn(std::shared_ptr<Square> start, std::shared_ptr<Square> end, bool dummyFlag = false);
     std::shared_ptr<Board> getBoard();
     void promote(pieceType chosenType);
     void undoMove();
