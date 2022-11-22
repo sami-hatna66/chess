@@ -8,6 +8,7 @@
 // Forward Declarations
 class Square;
 class Piece;
+class Game;
 enum class pieceColor;
 
 enum class gameStatus {
@@ -37,7 +38,7 @@ class Board : public std::enable_shared_from_this<Board> {
     void movePiece(std::shared_ptr<Square> start, std::shared_ptr<Square> end,
                    std::shared_ptr<Piece> piece);
     gameStatus isCheck(pieceColor side);
-    gameStatus isCheckMate(pieceColor colorInCheck, gameStatus prevStatus);
+    gameStatus isCheckMate(pieceColor colorInCheck, gameStatus prevStatus, std::shared_ptr<Game> Game);
     std::pair<int, int> getBlackKingPos();
     void setBlackKingPos(std::pair<int, int> newPos);
     std::pair<int, int> getWhiteKingPos();

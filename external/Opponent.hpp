@@ -6,10 +6,6 @@
 #include "Board.hpp"
 #include "Game.hpp"
 
-#include <random>
-#include <cstdlib>
-#include <iostream>
-
 std::vector<std::array<int, 4>> getAiMoves(std::shared_ptr<Game> game, pieceColor color);
 
 void opponentTurn(std::shared_ptr<Game> game);

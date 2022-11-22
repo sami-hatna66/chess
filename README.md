@@ -10,6 +10,7 @@ https://user-images.githubusercontent.com/88731772/195416098-a38caf1b-54c4-4bf7-
 *[all dependencies can be installed with system package manager, build configuration uses cmake scripts to find and link with them]*
 
 ## Features
+ - AI opponent
  - Move validation
  - Check and mate detection
  - Special moves: Pawn promotion, Castling, En Passant
@@ -17,4 +18,3 @@ https://user-images.githubusercontent.com/88731772/195416098-a38caf1b-54c4-4bf7-
 
 ## Planned Features
  - Algebraic notation processing
- - Computer opponent

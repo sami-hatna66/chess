@@ -50,7 +50,7 @@ void drawText(SDL_Renderer *renderer, const char *text, int x, int y,
 
 void draw(SDL_Renderer *renderer, std::shared_ptr<Board> board,
           std::shared_ptr<Square> selectedSquare, std::shared_ptr<Game> game,
-          bool replayButtonPressed, bool showPromotionMenu) {
+          bool buttonPressed, bool showPromotionMenu) {
     SDL_SetRenderDrawColor(renderer, 241, 221, 206, 255);
     SDL_RenderClear(renderer);
 
@@ -99,79 +99,77 @@ void draw(SDL_Renderer *renderer, std::shared_ptr<Board> board,
                                                          : "White's turn",
              5, 405, {255, 255, 255});
 
+    if (game->getOpponent() == opponents::computer && 
+        game->getCurrentTurn() == pieceColor::black &&
+        (game->getStatus() == gameStatus::inProgress ||
+         game->getStatus() == gameStatus::blackCheck ||
+         game->getStatus() == gameStatus::whiteCheck)) {
+            drawText(renderer, "Thinking", 320, 417, {255, 255, 255});
+         }
+
     if (game->getStatus() == gameStatus::blackCheck) {
         drawText(renderer, "Black in check", 5, 425, {255, 255, 255});
     } else if (game->getStatus() == gameStatus::whiteCheck) {
         drawText(renderer, "White in check", 5, 425, {255, 255, 255});
     }
 
-    if (game->getStatus() == gameStatus::startScreen) {
-        SDL_SetRenderDrawColor(renderer, 169, 169, 169, 255);
-        r.x = 110;
-        r.y = 146;
-        r.w = 180;
-        r.h = 107;
-        SDL_RenderFillRect(renderer, &r);
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderDrawRect(renderer, &r);
-
-        drawText(renderer, "Choose Opponent:", 115, 151, {0, 0, 0});
-
-        r.x = 120; r.y = 171; r.w = 10; r.h = 10;
-        if (game->getOpponent() == opponents::player) {
-            SDL_RenderFillRect(renderer, &r);
-            r.y = 191;
-            SDL_RenderDrawRect(renderer, &r);
-        }
-        else {
-            SDL_RenderDrawRect(renderer, &r);
-            r.y = 191;
-            SDL_RenderFillRect(renderer, &r);
-        }
-
-        drawText(renderer, "Player", 135, 169, {0, 0, 0});
-        drawText(renderer, "Computer", 135, 189, {0, 0, 0});
-
-        SDL_SetRenderDrawColor(renderer, 169, 169, 169, 255);
-        r.x = 160;
-        r.y = 212;
-        r.w = 80;
-        r.h = 34;
-        SDL_RenderFillRect(renderer, &r);
-
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderDrawRect(renderer, &r);
-
-        drawText(renderer, "START", 167, 215, {0, 0, 0}, 30, 65);
-    }
-
+    // Draw start/replay button
     if (game->getStatus() == gameStatus::blackCheckmate ||
-        game->getStatus() == gameStatus::whiteCheckmate) {
-        drawText(renderer,
-                 game->getStatus() == gameStatus::blackCheckmate
-                     ? "BLACK CHECKMATE"
-                     : "WHITE CHECKMATE",
-                 255, 402, {255, 0, 0}, 50);
-
-        // Draw replay button
-        if (replayButtonPressed) {
-            SDL_SetRenderDrawColor(renderer, 211, 211, 211, 255);
-        } else {
+        game->getStatus() == gameStatus::whiteCheckmate || 
+        game->getStatus() == gameStatus::startScreen) {
             SDL_SetRenderDrawColor(renderer, 169, 169, 169, 255);
-        }
-        r.x = 145;
-        r.y = 178;
-        r.w = 110;
-        r.h = 44;
-        SDL_RenderFillRect(renderer, &r);
+            r.x = 110;
+            r.y = 146;
+            r.w = 180;
+            r.h = 107;
+            SDL_RenderFillRect(renderer, &r);
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+            SDL_RenderDrawRect(renderer, &r);
 
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderDrawRect(renderer, &r);
+            drawText(renderer, "Choose Opponent:", 115, 151, {0, 0, 0});
 
-        drawText(renderer, "REPLAY", 160, 181, {0, 0, 0}, 40, 80);
+            r.x = 120; r.y = 171; r.w = 10; r.h = 10;
+            if (game->getOpponent() == opponents::player) {
+                SDL_RenderFillRect(renderer, &r);
+                r.y = 191;
+                SDL_RenderDrawRect(renderer, &r);
+            }
+            else {
+                SDL_RenderDrawRect(renderer, &r);
+                r.y = 191;
+                SDL_RenderFillRect(renderer, &r);
+            }
+
+            drawText(renderer, "Player", 135, 169, {0, 0, 0});
+            drawText(renderer, "Computer", 135, 189, {0, 0, 0});
+
+            if (buttonPressed) {
+                SDL_SetRenderDrawColor(renderer, 211, 211, 211, 255);
+            } else {
+                SDL_SetRenderDrawColor(renderer, 169, 169, 169, 255);
+            }
+            r.x = 160;
+            r.y = 212;
+            r.w = 80;
+            r.h = 34;
+            SDL_RenderFillRect(renderer, &r);
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+            SDL_RenderDrawRect(renderer, &r);
+
+            if (game->getStatus() == gameStatus::startScreen) {
+                drawText(renderer, "START", 167, 215, {0, 0, 0}, 30, 65);
+            } else {
+                drawText(renderer, "REPLAY", 167, 215, {0, 0, 0}, 30, 65);
+                drawText(renderer, game->getStatus() == gameStatus::blackCheckmate ? "BLACK CHECKMATE" : "WHITE CHECKMATE", 
+                    255, 402, {255, 0, 0}, 50);
+            }
     }
     // Draw undo move button
-    else {
+    else if (!(game->getOpponent() == opponents::computer && 
+               game->getCurrentTurn() == pieceColor::black &&
+               (game->getStatus() == gameStatus::inProgress ||
+                game->getStatus() == gameStatus::blackCheck ||
+                game->getStatus() == gameStatus::whiteCheck))) {
         SDL_SetRenderDrawColor(renderer, 169, 169, 169, 255);
         r.x = 344;
         r.y = 415;
@@ -256,12 +254,13 @@ int main(int argc, char *argv[]) {
     SDL_Event event;
     bool isQuit = false;
 
-    bool replayButtonPressed = false;
+    bool buttonPressed = false;
 
-    draw(renderer, game->getBoard(), selectedSquare, game, replayButtonPressed,
+    draw(renderer, game->getBoard(), selectedSquare, game, buttonPressed,
          game->getStatus() == gameStatus::choosingPromotion);
 
     while (!isQuit) {
+        // If playing computer, call method to determine computer move
         if ((game->getStatus() == gameStatus::inProgress ||
              game->getStatus() == gameStatus::blackCheck ||
              game->getStatus() == gameStatus::whiteCheck) && 
@@ -275,7 +274,7 @@ int main(int argc, char *argv[]) {
                 
                 game->setCurrentTurn(pieceColor::white);
                 draw(renderer, game->getBoard(), selectedSquare, game,
-                     replayButtonPressed,
+                     buttonPressed,
                      game->getStatus() == gameStatus::choosingPromotion);
             }
         else if (SDL_PollEvent(&event)) {
@@ -285,29 +284,27 @@ int main(int argc, char *argv[]) {
                 int clickedRow = 7 - int(event.button.y / 50);
                 int clickedCol = int(event.button.x / 50);
 
-                // Cease gameplay and render replay button if in checkmate
-                if (game->getStatus() == gameStatus::blackCheckmate ||
-                    game->getStatus() == gameStatus::whiteCheckmate) {
-                    if (event.button.x >= 145 && event.button.x <= 255 &&
-                        event.button.y >= 178 && event.button.y <= 222) {
-                        replayButtonPressed = true;
-                    }
+                // Click on start/replay button
+                if ((game->getStatus() == gameStatus::blackCheckmate ||
+                     game->getStatus() == gameStatus::whiteCheckmate ||
+                     game->getStatus() == gameStatus::startScreen) &&
+                    (event.button.x >= 160 && event.button.x <= 240 &&
+                     event.button.y >= 212 && event.button.y <= 246)) {
+                        buttonPressed = true;
                 }
                 // Click on opponent selection
-                else if (game->getStatus() == gameStatus::startScreen &&
-                           event.button.x >= 120 && event.button.x <= 130 &&
-                           event.button.y >= 171 && event.button.y <= 181) {
+                else if ((game->getStatus() == gameStatus::blackCheckmate ||
+                          game->getStatus() == gameStatus::whiteCheckmate ||
+                          game->getStatus() == gameStatus::startScreen) &&
+                         (event.button.x >= 120 && event.button.x <= 190 &&
+                          event.button.y >= 171 && event.button.y <= 181)) {
                             game->setOpponent(opponents::player);
-                } else if (game->getStatus() == gameStatus::startScreen &&
-                           event.button.x >= 120 && event.button.x <= 130 &&
-                           event.button.y >= 191 && event.button.y <= 201) {
+                } else if ((game->getStatus() == gameStatus::blackCheckmate ||
+                            game->getStatus() == gameStatus::whiteCheckmate ||
+                            game->getStatus() == gameStatus::startScreen) &&
+                           (event.button.x >= 120 && event.button.x <= 210 &&
+                            event.button.y >= 191 && event.button.y <= 201)) {
                             game->setOpponent(opponents::computer);
-                }
-                // Click on start button
-                else if (game->getStatus() == gameStatus::startScreen && 
-                         event.button.x >= 160 && event.button.x <= 240 &&
-                         event.button.y >= 212 && event.button.y <= 246) {
-                            game->setStatus(gameStatus::inProgress);
                 }
                 // Click on promotion menu
                 else if (game->getStatus() == gameStatus::choosingPromotion) {
@@ -330,6 +327,9 @@ int main(int argc, char *argv[]) {
                 else if (event.button.x >= 344 && event.button.x <= 388 &&
                            event.button.y >= 415 && event.button.y <= 434) {
                     game->undoMove();
+                    if (game->getOpponent() == opponents::computer) {
+                        game->undoMove();
+                    }
                 } 
                 // Click on chess board
                 else if (clickedCol >= 0 && clickedCol <= 7 &&
@@ -357,18 +357,18 @@ int main(int argc, char *argv[]) {
                 }
 
                 draw(renderer, game->getBoard(), selectedSquare, game,
-                     replayButtonPressed,
+                     buttonPressed,
                      game->getStatus() == gameStatus::choosingPromotion);
             } else if (event.type == SDL_MOUSEBUTTONUP) {
-                // Start new game if replay button is pressed
-                if (replayButtonPressed) {
-                    replayButtonPressed = false;
+                // Start new game if start/replay button is pressed
+                if (buttonPressed) {
+                    buttonPressed = false;
                     draw(renderer, game->getBoard(), selectedSquare, game,
-                         replayButtonPressed,
+                         buttonPressed,
                          game->getStatus() == gameStatus::choosingPromotion);
                     game->resetGame();
                     draw(renderer, game->getBoard(), selectedSquare, game,
-                         replayButtonPressed,
+                         buttonPressed,
                          game->getStatus() == gameStatus::choosingPromotion);
                 }
             }

@@ -3,6 +3,7 @@
 std::vector<std::array<int, 4>> getAiMoves(std::shared_ptr<Game> game, pieceColor color) {
     std::shared_ptr<Board> board = game->getBoard();
 
+    // Get all squares with pieces belonging to the computer
     std::vector<std::shared_ptr<Square>> aiSquares;
     for (int i = 7; i >= 0; i--) {
         for (int j = 0; j < 8; j++) {
@@ -15,6 +16,7 @@ std::vector<std::array<int, 4>> getAiMoves(std::shared_ptr<Game> game, pieceColo
 
     // startRow, startCol, endRow, endCol
     std::vector<std::array<int, 4>> aiMoves;
+    // Get all possible moves the computer can make
     for (auto startSquare : aiSquares) {
         if (startSquare->getPiece() != nullptr) {
             for (auto endSquare : startSquare->getPiece()->legalMoves(board, startSquare)) {
@@ -26,6 +28,7 @@ std::vector<std::array<int, 4>> getAiMoves(std::shared_ptr<Game> game, pieceColo
     return aiMoves;
 }
 
+// Root of minimax process
 void opponentTurn(std::shared_ptr<Game> game) {
     std::shared_ptr<Board> board = game->getBoard();
 
@@ -35,12 +38,14 @@ void opponentTurn(std::shared_ptr<Game> game) {
     int bestScore = -99999999;
     int depth = 3;
     bool isMaximisingPlayer = true;
+    // Iterate through each possible move and start a recursive minimax
     for (auto move : aiMoves) {
+        // Clone board and game to prevent any side effects bleeding over into actual game/board
         auto dummyBoard = std::make_shared<Board>(Board(board->getSquares()));
         auto dummyGame = std::make_shared<Game>(Game(game->getCurrentTurn(), game->getStatus(), game->getOpponent(), dummyBoard));
         if (dummyGame->turn(dummyBoard->getSquare(move[0], move[1]), dummyBoard->getSquare(move[2], move[3]))) {
             int moveScore = miniMax(depth - 1, dummyGame, !isMaximisingPlayer, -10000, 10000);
-            std::cout << moveScore << std::endl;
+            // Select move with highest evaluation at end of minimax
             if (moveScore >= bestScore) {
                 bestMove = move;
                 bestScore = moveScore;
@@ -48,12 +53,15 @@ void opponentTurn(std::shared_ptr<Game> game) {
         }
     }
 
+    // Make chosen move
     auto startSquare = board->getSquare(bestMove[0], bestMove[1]);
     auto endSquare = board->getSquare(bestMove[2], bestMove[3]);
     game->turn(startSquare, endSquare);
 }
 
+// Recursive minimax
 int miniMax(int depth, std::shared_ptr<Game> game, bool isMaximising, int alpha, int beta) {
+    // Base case, return final board evaluation
     if (depth == 0) {
         return -evaluateBoard(game, game->getBoard());
     }
@@ -62,14 +70,15 @@ int miniMax(int depth, std::shared_ptr<Game> game, bool isMaximising, int alpha,
 
     auto aiMoves = getAiMoves(game, (isMaximising ? pieceColor::black : pieceColor::white));
 
+    // Black is the maximising player
     if (isMaximising) {
         int bestScore = -99999999;
         for (auto move : aiMoves) {
-            auto turn = game->turn(board->getSquare(move[0], move[1]), board->getSquare(move[2], move[3]));
-            if (turn) {
+            if (game->turn(board->getSquare(move[0], move[1]), board->getSquare(move[2], move[3]))) {
                 bestScore = std::max(bestScore, miniMax(depth - 1, game, !isMaximising, alpha, beta));
                 alpha = std::max(alpha, bestScore);
                 game->undoMove();
+                // Alpha-beta pruning
                 if (beta <= alpha) {
                     return bestScore;
                 }
@@ -79,8 +88,7 @@ int miniMax(int depth, std::shared_ptr<Game> game, bool isMaximising, int alpha,
     } else {
         int bestScore = 99999999;
         for (auto move : aiMoves) {
-            auto turn = game->turn(board->getSquare(move[0], move[1]), board->getSquare(move[2], move[3]));
-            if (turn) {
+            if (game->turn(board->getSquare(move[0], move[1]), board->getSquare(move[2], move[3]))) {
                 bestScore = std::min(bestScore, miniMax(depth - 1, game, !isMaximising, alpha, beta));
                 beta = std::min(beta, bestScore);
                 game->undoMove();
@@ -93,6 +101,7 @@ int miniMax(int depth, std::shared_ptr<Game> game, bool isMaximising, int alpha,
     }
 }
 
+// Each outcome is rated according to the value of the pieces left on the board
 int evaluateBoard(std::shared_ptr<Game> game, std::shared_ptr<Board> board) {
     int score = 0;
     for (int i = 0; i < 8; i++) {

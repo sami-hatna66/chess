@@ -26,19 +26,22 @@ std::vector<std::pair<int, int>>
 Piece::legalMoves(std::shared_ptr<Board> board,
                   std::shared_ptr<Square> currentSquare) {
     std::vector<std::pair<int, int>> result;
-    for (int i = 0; i <= 7; i++) {
-        for (int j = 0; j <= 7; j++) {
-            if ((i != currentSquare->getRow() || j != currentSquare->getCol()) &&
-                this->canMove(
-                    board,
-                    board->getSquare(currentSquare->getRow(),
-                                          currentSquare->getCol()),
-                    board->getSquare(i, j))) {
-                        result.push_back(std::make_pair(i, j));
-            }
+
+    auto piece = currentSquare->getPiece();
+    int currentRow = currentSquare->getRow();
+    int currentCol = currentSquare->getCol();
+    
+    // Iterate through squares and collect all possible moves
+    // (doesn't consider whether moves result in check --> this is handled in game.turn)
+    for (int i = 7; i>= 0; i--) {
+        for (int j = 0; j < 8; j++) {
+            if ((i != currentRow || j != currentCol) &&
+                this->canMove(board, currentSquare, board->getSquare(i, j))) {
+                    result.push_back(std::make_pair(i, j));
+                }
         }
     }
-    std::reverse(result.begin(), result.end());
+
     return result;
 }
 
@@ -121,7 +124,6 @@ bool Pawn::canMove(std::shared_ptr<Board> board, std::shared_ptr<Square> start,
             (startCol == endCol - 1 || startCol == endCol + 1) &&
             end->getPiece() != nullptr &&
             end->getPiece()->getColor() != this->getColor()) {
-            end->getPiece()->setAlive(false);
             return true;
         }
         // En passant take
@@ -132,9 +134,7 @@ bool Pawn::canMove(std::shared_ptr<Board> board, std::shared_ptr<Square> start,
             if (pieceBehind != nullptr &&
                 pieceBehind->getColor() != this->getColor() &&
                 pieceBehind->getPieceName() == pieceType::Pawn &&
-                pieceBehind->isVulnerableToEnPassant()) {
-                pieceBehind->setAlive(false);
-                board->getSquare(startRow, endCol)->setPiece(nullptr);
+                pieceBehind->isVulnerableToEnPassant()) {;
                 return true;
             } else {
                 return false;
@@ -397,6 +397,8 @@ Queen::Queen(pieceColor pColor) : Piece(pColor) {
     imageName = pColor == pieceColor::white ? "assets/whtQueen.png"
                                             : "assets/blkQueen.png";
     pieceName = pieceType::Queen;
+    dummyRook = std::make_shared<Rook>(Rook(pColor, false));
+    dummyBishop = std::make_shared<Bishop>(Bishop(pColor));
 }
 
 bool Queen::canMove(std::shared_ptr<Board> board, std::shared_ptr<Square> start,
@@ -407,19 +409,18 @@ bool Queen::canMove(std::shared_ptr<Board> board, std::shared_ptr<Square> start,
     int endCol = end->getCol();
     int endRow = end->getRow();
 
-    std::shared_ptr<Rook> dummyRook = std::make_shared<Rook>(Rook(this->getColor(), false));
+    // dummyRook and dummyBishop are cached as attributes of this, saves expensive creation/deletion each time this method is called
     board->getSquare(startRow, startCol)->setPiece(dummyRook);
     if (dummyRook->canMove(board, board->getSquare(startRow, startCol), board->getSquare(endRow, endCol))) {
-        board->getSquare(startRow, startCol)->setPiece(std::make_shared<Queen>(Queen(this->getColor())));
+        board->getSquare(startRow, startCol)->setPiece(shared_from_this());
         return true;
     } else {
-        std::shared_ptr<Bishop> dummyBishop = std::make_shared<Bishop>(Bishop(this->getColor()));
         board->getSquare(startRow, startCol)->setPiece(dummyBishop);
         if (dummyBishop->canMove(board, board->getSquare(startRow, startCol), board->getSquare(endRow, endCol))) {
-            board->getSquare(startRow, startCol)->setPiece(std::make_shared<Queen>(Queen(this->getColor())));
+            board->getSquare(startRow, startCol)->setPiece(shared_from_this());
             return true;
         } else {
-            board->getSquare(startRow, startCol)->setPiece(std::make_shared<Queen>(Queen(this->getColor())));
+            board->getSquare(startRow, startCol)->setPiece(shared_from_this());
             return false;
         }
     }

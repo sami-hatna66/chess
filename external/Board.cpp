@@ -1,4 +1,6 @@
 #include "Board.hpp"
+// Resolve circular dependency
+#include "Game.hpp"
 
 Board::Board() { this->resetBoard(); }
 
@@ -135,6 +137,7 @@ void Board::movePiece(std::shared_ptr<Square> start,
         std::move(squares[start->getRow()][start->getCol()]->getPiece()));
     squares[start->getRow()][start->getCol()]->setPiece(nullptr);
 
+    // If piece moved was a king, record change to white/blackKingPos
     if (piece->getPieceName() == pieceType::King) {
         if (piece->getColor() == pieceColor::black) {
             blackKingPos = std::make_pair<int, int>(end->getRow(), end->getCol());
@@ -151,24 +154,6 @@ gameStatus Board::isCheck(pieceColor side) {
         for (int j = 0; j < 8; j++) {
             auto piece = squares[i][j]->getPiece();
             if (piece != nullptr && piece->getColor() != side) {
-                // auto possibleMoves =
-                //     piece->legalMoves(shared_from_this(), squares[i][j]);
-                // for (auto move : possibleMoves) {
-                //     auto endPiece =
-                //         squares[move.first][move.second]->getPiece();
-                //     if (endPiece != nullptr &&
-                //         endPiece->getPieceName() == pieceType::King &&
-                //         endPiece->getColor() == side) {
-                //         return side == pieceColor::black
-                //                    ? gameStatus::blackCheck
-                //                    : gameStatus::whiteCheck;
-                //     }
-                // }
-                // std::cout << (squares[blackKingPos.first][blackKingPos.second]->getPiece()->getPieceName() == pieceType::King &&
-                //     squares[blackKingPos.first][blackKingPos.second]->getPiece()->getColor() == pieceColor::black) << std::endl;
-                // std::cout << (squares[whiteKingPos.first][whiteKingPos.second]->getPiece()->getPieceName() == pieceType::King &&
-                //     squares[whiteKingPos.first][whiteKingPos.second]->getPiece()->getColor() == pieceColor::white) << std::endl;
-
                 if (side == pieceColor::black && 
                     piece->canMove(shared_from_this(), squares[i][j], squares[blackKingPos.first][blackKingPos.second])) {
                         return gameStatus::blackCheck;
@@ -183,31 +168,25 @@ gameStatus Board::isCheck(pieceColor side) {
 }
 
 // Check if colorInCheck is in checkmate
-gameStatus Board::isCheckMate(pieceColor colorInCheck, gameStatus prevStatus) {
-    std::shared_ptr<Board> dummyBoard;
+gameStatus Board::isCheckMate(pieceColor colorInCheck, gameStatus prevStatus, std::shared_ptr<Game> game) {
+    auto dummyGame = std::make_shared<Game>(Game((game->getCurrentTurn() == pieceColor::black ? pieceColor::white : pieceColor::black), game->getStatus(), game->getOpponent(), shared_from_this()));
 
     // Check if any piece from colorInCheck can make a move which results in
     // colorInCheck no longer being in check
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
-            auto piece = squares[i][j]->getPiece();
+            auto piece = this->getSquare(i, j)->getPiece();
             if (piece != nullptr && piece->getColor() == colorInCheck) {
                 std::vector<std::pair<int, int>> possibleMoves =
-                    piece->legalMoves(shared_from_this(), squares[i][j]);
-
+                    piece->legalMoves(shared_from_this(), this->getSquare(i, j));
                 for (auto move : possibleMoves) {
-                    dummyBoard = std::make_shared<Board>(Board(squares));
-                    auto piece = dummyBoard->getSquare(i, j)->getPiece();
-                    dummyBoard->movePiece(
-                        dummyBoard->getSquare(i, j),
-                        dummyBoard->getSquare(move.first, move.second),
-                        dummyBoard->getSquare(i, j)->getPiece());
-                    gameStatus testCheck = dummyBoard->isCheck(colorInCheck);
+                    dummyGame->turn(this->getSquare(i, j), this->getSquare(move.first, move.second), true);
+                    auto testCheck = dummyGame->getStatus();
+                    dummyGame->undoMove();
                     if ((colorInCheck == pieceColor::black &&
                          testCheck != gameStatus::blackCheck) ||
                         (colorInCheck == pieceColor::white &&
                          testCheck != gameStatus::whiteCheck)) {
-
                         return prevStatus;
                     }
                 }
@@ -235,6 +214,7 @@ void Board::setWhiteKingPos(std::pair<int, int> newPos) {
     whiteKingPos = newPos;
 }
 
+// For debugging
 void Board::printBoard() {
     for (int i = 7; i >= 0; i--) {
         for (int j = 0; j < 8; j++) {
