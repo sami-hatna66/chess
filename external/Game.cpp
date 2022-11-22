@@ -2,8 +2,16 @@
 
 Game::Game() {
     currentTurn = pieceColor::white;
-    status = gameStatus::inProgress;
+    status = gameStatus::startScreen;
+    opponent = opponents::player;
     board = std::make_shared<Board>(Board());
+}
+
+Game::Game(pieceColor pCurrentTurn, gameStatus pStatus, opponents pOpponent, std::shared_ptr<Board> pBoard) {
+    currentTurn = pCurrentTurn;
+    status = pStatus;
+    opponent = pOpponent;
+    board = pBoard;
 }
 
 void Game::resetGame() {
@@ -21,6 +29,10 @@ void Game::setCurrentTurn(pieceColor newCurrentTurn) {
 gameStatus Game::getStatus() { return status; }
 
 void Game::setStatus(gameStatus newStatus) { status = newStatus; }
+
+opponents Game::getOpponent() { return opponent; }
+
+void Game::setOpponent(opponents newOpponent) { opponent = newOpponent; }
 
 // Called when user selects promotion choice from menu in main
 void Game::promote(pieceType chosenType) {
@@ -54,9 +66,9 @@ void Game::promote(pieceType chosenType) {
         board->isCheck(currentTurn == pieceColor::black ? pieceColor::white
                                                         : pieceColor::black);
     if (status == gameStatus::blackCheck) {
-        status = board->isCheckMate(pieceColor::black);
+        status = board->isCheckMate(pieceColor::black, status, shared_from_this());
     } else if (status == gameStatus::whiteCheck) {
-        status = board->isCheckMate(pieceColor::white);
+        status = board->isCheckMate(pieceColor::white, status, shared_from_this());
     }
     currentTurn = (currentTurn == pieceColor::white) ? pieceColor::black
                                                      : pieceColor::white;
@@ -74,11 +86,11 @@ void Game::undoMove() {
         auto pieceTaken = std::get<3>(latestTurn);
         auto castlingMove = std::get<4>(latestTurn);
         auto enPassantMove = std::get<5>(latestTurn);
+        auto moveStatus = std::get<6>(latestTurn);
         moves.pop_back();
 
         // Return moved piece to previous square
-        board->getSquare(start->getRow(), start->getCol())
-            ->setPiece(pieceMoved);
+        board->movePiece(end, start, pieceMoved);
         // If a piece was taken, bring it back into play
         board->getSquare(end->getRow(), end->getCol())->setPiece(pieceTaken);
 
@@ -88,11 +100,11 @@ void Game::undoMove() {
                 board->getSquare(end->getRow(), end->getCol() - 1)->getPiece();
             if (leftNeighbour != nullptr &&
                 leftNeighbour->getPieceName() == pieceType::Rook) {
-                board->getSquare(start->getRow(), 7)->setPiece(leftNeighbour);
-                board->getSquare(end->getRow(), end->getCol() - 1)
-                    ->setPiece(nullptr);
-                leftNeighbour->setCanCastle(true);
-                pieceMoved->setCanCastle(true);
+                    board->getSquare(start->getRow(), 7)->setPiece(leftNeighbour);
+                    board->getSquare(end->getRow(), end->getCol() - 1)
+                        ->setPiece(nullptr);
+                    leftNeighbour->setCanCastle(true);
+                    pieceMoved->setCanCastle(true);
             } else {
                 auto rightNeighbour =
                     board->getSquare(end->getRow(), end->getCol() + 1)
@@ -137,38 +149,49 @@ void Game::undoMove() {
 
         // Perform same check and mate reviews for reverted board
         currentTurn = std::get<2>(latestTurn)->getColor();
-        status = board->isCheck(currentTurn == pieceColor::black
-                                    ? pieceColor::white
-                                    : pieceColor::black);
-        if (status == gameStatus::blackCheck) {
-            status = board->isCheckMate(pieceColor::black);
-        } else if (status == gameStatus::whiteCheck) {
-            status = board->isCheckMate(pieceColor::white);
-        }
+        status = moveStatus;
     }
 }
 
-bool Game::turn(std::shared_ptr<Square> start, std::shared_ptr<Square> end) {
+bool Game::turn(std::shared_ptr<Square> start, std::shared_ptr<Square> end, bool dummyFlag) {
     auto piece = start->getPiece();
+
+    int startRow = start->getRow();
+    int startCol = start->getCol();
+    int endRow = end->getRow();
+    int endCol = end->getCol();
 
     if (piece != nullptr && piece->getColor() == currentTurn) {
         auto evaluateMove = piece->canMove(board, start, end);
 
         if (evaluateMove) {
             // A piece can only move if it doesn't put its own side into check
-            std::shared_ptr<Board> dummyBoard =
-                std::make_shared<Board>(Board(board->getSquares()));
-            dummyBoard->movePiece(
-                dummyBoard->getSquare(start->getRow(), start->getCol()),
-                dummyBoard->getSquare(end->getRow(), end->getCol()),
-                dummyBoard->getSquare(start->getRow(), start->getCol())
-                    ->getPiece());
-            auto testCheck = dummyBoard->isCheck(piece->getColor());
+            auto cachePiece = board->getSquare(endRow, endCol)->getPiece();
+            board->movePiece(board->getSquare(startRow, startCol), board->getSquare(endRow, endCol), board->getSquare(startRow, startCol)->getPiece());
+            auto testCheck = board->isCheck(piece->getColor());
+            board->movePiece(board->getSquare(endRow, endCol), board->getSquare(startRow, startCol), board->getSquare(endRow, endCol)->getPiece());
+            board->getSquare(endRow, endCol)->setPiece(cachePiece);
+
             if ((currentTurn == pieceColor::black &&
                  testCheck != gameStatus::blackCheck) ||
                 (currentTurn == pieceColor::white &&
                  testCheck != gameStatus::whiteCheck)) {
-
+                
+                // En passant take
+                if (start->getPiece() != nullptr && start->getPiece()->getPieceName() == pieceType::Pawn) {
+                    if (std::abs(endRow - startRow) == 1 &&
+                        (startCol == endCol - 1 || startCol == endCol + 1) &&
+                        end->getPiece() == nullptr) {
+                            auto pieceBehind = board->getSquare(startRow, endCol)->getPiece();
+                            if (pieceBehind != nullptr &&
+                                pieceBehind->getColor() != piece->getColor() &&
+                                pieceBehind->getPieceName() == pieceType::Pawn &&
+                                pieceBehind->isVulnerableToEnPassant()) {
+                                    board->getSquare(startRow, endCol)->setPiece(nullptr);
+                                }
+                        }
+                }
+                    
                 for (int i = 0; i < 8; i++) {
                     for (int j = 0; j < 8; j++) {
                         auto piece = board->getSquare(i, j)->getPiece();
@@ -183,26 +206,46 @@ bool Game::turn(std::shared_ptr<Square> start, std::shared_ptr<Square> end) {
                     }
                 }
 
+                if (piece->getPieceName() == pieceType::Pawn) {
+                    // Open pawn up to en passant
+                    if (piece->getIsFirstMove() && std::abs(endRow - startRow) == 2) {
+                        piece->setVulnerableToEnPassant(true);
+                    }
+
+                    piece->setIsFirstMove(false);
+
+                    // Check for promotion
+                    if ((piece->getColor() == pieceColor::white && endRow == 7) || 
+                        (piece->getColor() == pieceColor::black && endRow == 0)) {
+                            piece->setCanPromote(true);
+                        }
+                }
+
+                // Once any king/rook has moved, it can no longer castle
+                if (piece->getPieceName() == pieceType::Rook || piece->getPieceName() == pieceType::King) {
+                    piece->setCanCastle(false);
+                }
+
                 // Record move
                 // If move was castling
                 if (start->getPiece()->getPieceName() == pieceType::King &&
-                    std::abs(start->getCol() - end->getCol()) == 2) {
+                    std::abs(startCol - endCol) == 2) {
                     moves.push_back({start, end, start->getPiece(),
-                                     end->getPiece(), true, false});
+                                     end->getPiece(), true, false, gameStatus::inProgress});
                 }
                 // If move was en passant
                 else if (start->getPiece() != nullptr &&
                          start->getPiece()->getPieceName() == pieceType::Pawn &&
-                         (end->getCol() == start->getCol() - 1 ||
-                          end->getCol() == start->getCol() + 1) &&
+                         (endCol == startCol - 1 ||
+                          endCol == startCol + 1) &&
                          end->getPiece() == nullptr) {
                     moves.push_back({start, end, start->getPiece(),
-                                     end->getPiece(), false, true});
+                                     end->getPiece(), false, true, gameStatus::inProgress});
                 }
                 // All other moves
                 else {
                     moves.push_back({start, end, start->getPiece(),
-                                     end->getPiece(), false, false});
+                                     end->getPiece(), false, false, gameStatus::inProgress});
                 }
 
                 board->movePiece(start, end, piece);
@@ -212,29 +255,41 @@ bool Game::turn(std::shared_ptr<Square> start, std::shared_ptr<Square> end) {
                 // called from main
                 if (piece->getPieceName() == pieceType::Pawn &&
                     piece->getCanPromote()) {
-                    status = gameStatus::choosingPromotion;
+                        if (opponent == opponents::player) {
+                            status = gameStatus::choosingPromotion;
+                        } else {
+                            promote(pieceType::Queen);
+                        }
                 } else {
                     // Check if in check
                     // If so, then check for mate
                     status = board->isCheck(currentTurn == pieceColor::black
                                                 ? pieceColor::white
                                                 : pieceColor::black);
-                    if (status == gameStatus::blackCheck) {
-                        status = board->isCheckMate(pieceColor::black);
-                    } else if (status == gameStatus::whiteCheck) {
-                        status = board->isCheckMate(pieceColor::white);
+                    
+                    // Only need to check for mate if side is already in check
+                    if (!dummyFlag && 
+                        (status == gameStatus::blackCheck ||
+                         status == gameStatus::whiteCheck)) {
+                        if (currentTurn == pieceColor::white) {
+                            status = board->isCheckMate(pieceColor::black, status, shared_from_this());
+                        } else {
+                            status = board->isCheckMate(pieceColor::white, status, shared_from_this());
+                        }
                     }
+                    
+                    // Record status for last entry in move stack
+                    auto latestTurn = moves.back();
+                    std::get<6>(latestTurn) = status;
+
                     currentTurn = (currentTurn == pieceColor::white)
                                       ? pieceColor::black
                                       : pieceColor::white;
                 }
-            }
-        }
-
-        return true;
-    }
-
-    return false;
+                return true;
+            } else return false;
+        } else return false;
+    } else return false;
 }
 
 std::shared_ptr<Board> Game::getBoard() { return board; }

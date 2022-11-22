@@ -14,7 +14,7 @@ enum class pieceType { Base, Pawn, Rook, Knight, Bishop, King, Queen };
 class Board;
 class Square;
 
-class Piece {
+class Piece : public std::enable_shared_from_this<Piece> {
   private:
     bool alive;
     pieceColor color;
@@ -103,6 +103,10 @@ class King : public Piece {
 };
 
 class Queen : public Piece {
+  private:
+    std::shared_ptr<Rook> dummyRook;
+    std::shared_ptr<Bishop> dummyBishop;
+
   public:
     Queen(pieceColor pColor);
     bool canMove(std::shared_ptr<Board> board, std::shared_ptr<Square> start,

@@ -1,4 +1,6 @@
 #include "Board.hpp"
+// Resolve circular dependency
+#include "Game.hpp"
 
 Board::Board() { this->resetBoard(); }
 
@@ -36,6 +38,11 @@ Board::Board(std::array<std::array<std::shared_ptr<Square>, 8>, 8> pSquares) {
                     Square(i, j,
                            std::make_shared<King>(King(
                                piece->getColor(), piece->getCanCastle()))));
+                if (piece->getColor() == pieceColor::black) {
+                    blackKingPos = std::make_pair(i, j);
+                } else {
+                    whiteKingPos = std::make_pair(i, j);
+                }
             }
         }
     }
@@ -101,6 +108,10 @@ void Board::resetBoard() {
             }
         }
     }
+
+    // row, col
+    blackKingPos = std::make_pair<int, int>(7, 4);
+    whiteKingPos = std::make_pair<int, int>(0, 4);
 }
 
 std::shared_ptr<Square> Board::getSquare(int row, int col) {
@@ -109,6 +120,10 @@ std::shared_ptr<Square> Board::getSquare(int row, int col) {
 
 std::array<std::array<std::shared_ptr<Square>, 8>, 8> Board::getSquares() {
     return squares;
+}
+
+void Board::setSquares(std::array<std::array<std::shared_ptr<Square>, 8>, 8> newSquares) {
+    squares = newSquares;
 }
 
 std::array<std::array<std::shared_ptr<Square>, 8>, 8> *Board::getBoard() {
@@ -121,6 +136,15 @@ void Board::movePiece(std::shared_ptr<Square> start,
     squares[end->getRow()][end->getCol()]->setPiece(
         std::move(squares[start->getRow()][start->getCol()]->getPiece()));
     squares[start->getRow()][start->getCol()]->setPiece(nullptr);
+
+    // If piece moved was a king, record change to white/blackKingPos
+    if (piece->getPieceName() == pieceType::King) {
+        if (piece->getColor() == pieceColor::black) {
+            blackKingPos = std::make_pair<int, int>(end->getRow(), end->getCol());
+        } else {
+            whiteKingPos = std::make_pair<int, int>(end->getRow(), end->getCol());
+        }
+    }
 }
 
 // Check if side is in check
@@ -130,52 +154,40 @@ gameStatus Board::isCheck(pieceColor side) {
         for (int j = 0; j < 8; j++) {
             auto piece = squares[i][j]->getPiece();
             if (piece != nullptr && piece->getColor() != side) {
-                auto possibleMoves =
-                    piece->legalMoves(shared_from_this(), squares[i][j]);
-                for (auto move : possibleMoves) {
-                    auto endPiece =
-                        squares[move.first][move.second]->getPiece();
-                    if (endPiece != nullptr &&
-                        endPiece->getPieceName() == pieceType::King &&
-                        endPiece->getColor() == side) {
-                        return side == pieceColor::black
-                                   ? gameStatus::blackCheck
-                                   : gameStatus::whiteCheck;
-                    }
+                if (side == pieceColor::black && 
+                    piece->canMove(shared_from_this(), squares[i][j], squares[blackKingPos.first][blackKingPos.second])) {
+                        return gameStatus::blackCheck;
+                } else if (side == pieceColor::white &&
+                           piece->canMove(shared_from_this(), squares[i][j], squares[whiteKingPos.first][whiteKingPos.second])) {
+                            return gameStatus::whiteCheck;
                 }
             }
         }
     }
     return gameStatus::inProgress;
 }
+
 // Check if colorInCheck is in checkmate
-gameStatus Board::isCheckMate(pieceColor colorInCheck) {
-    std::shared_ptr<Board> dummyBoard;
+gameStatus Board::isCheckMate(pieceColor colorInCheck, gameStatus prevStatus, std::shared_ptr<Game> game) {
+    auto dummyGame = std::make_shared<Game>(Game((game->getCurrentTurn() == pieceColor::black ? pieceColor::white : pieceColor::black), game->getStatus(), game->getOpponent(), shared_from_this()));
 
     // Check if any piece from colorInCheck can make a move which results in
     // colorInCheck no longer being in check
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
-            auto piece = squares[i][j]->getPiece();
+            auto piece = this->getSquare(i, j)->getPiece();
             if (piece != nullptr && piece->getColor() == colorInCheck) {
                 std::vector<std::pair<int, int>> possibleMoves =
-                    piece->legalMoves(shared_from_this(), squares[i][j]);
-
+                    piece->legalMoves(shared_from_this(), this->getSquare(i, j));
                 for (auto move : possibleMoves) {
-                    dummyBoard = std::make_shared<Board>(Board(squares));
-                    dummyBoard->movePiece(
-                        dummyBoard->getSquare(i, j),
-                        dummyBoard->getSquare(move.first, move.second),
-                        dummyBoard->getSquare(i, j)->getPiece());
-                    gameStatus testCheck = dummyBoard->isCheck(colorInCheck);
+                    dummyGame->turn(this->getSquare(i, j), this->getSquare(move.first, move.second), true);
+                    auto testCheck = dummyGame->getStatus();
+                    dummyGame->undoMove();
                     if ((colorInCheck == pieceColor::black &&
                          testCheck != gameStatus::blackCheck) ||
                         (colorInCheck == pieceColor::white &&
                          testCheck != gameStatus::whiteCheck)) {
-
-                        return colorInCheck == pieceColor::black
-                                   ? gameStatus::blackCheck
-                                   : gameStatus::whiteCheck;
+                        return prevStatus;
                     }
                 }
             }
@@ -184,4 +196,83 @@ gameStatus Board::isCheckMate(pieceColor colorInCheck) {
 
     return colorInCheck == pieceColor::black ? gameStatus::blackCheckmate
                                              : gameStatus::whiteCheckmate;
+}
+
+std::pair<int, int> Board::getBlackKingPos() {
+    return blackKingPos;
+}
+
+void Board::setBlackKingPos(std::pair<int, int> newPos) {
+    blackKingPos = newPos;
+}
+
+std::pair<int, int> Board::getWhiteKingPos() {
+    return whiteKingPos;
+}
+
+void Board::setWhiteKingPos(std::pair<int, int> newPos) {
+    whiteKingPos = newPos;
+}
+
+// For debugging
+void Board::printBoard() {
+    for (int i = 7; i >= 0; i--) {
+        for (int j = 0; j < 8; j++) {
+            auto square = squares[i][j];
+            if (square->getPiece() == nullptr) {
+                std::cout << "o ";
+            }
+            else {
+                auto piece = square->getPiece();
+                if (piece->getColor() == pieceColor::black) {
+                    switch(piece->getPieceName()) {
+                        case pieceType::Pawn: 
+                            std::cout << "P ";
+                            break;
+                        case pieceType::Rook: 
+                            std::cout << "R ";
+                            break;
+                        case pieceType::Knight: 
+                            std::cout << "K ";
+                            break;
+                        case pieceType::Bishop: 
+                            std::cout << "B ";
+                            break;
+                        case pieceType::King: 
+                            std::cout << "K ";
+                            break;
+                        case pieceType::Queen: 
+                            std::cout << "Q ";
+                            break;
+                        default:
+                            std::cout << "err";
+                    }
+                } else {
+                    switch(piece->getPieceName()) {
+                        case pieceType::Pawn: 
+                            std::cout << "p ";
+                            break;
+                        case pieceType::Rook: 
+                            std::cout << "r ";
+                            break;
+                        case pieceType::Knight: 
+                            std::cout << "k ";
+                            break;
+                        case pieceType::Bishop: 
+                            std::cout << "b ";
+                            break;
+                        case pieceType::King: 
+                            std::cout << "k ";
+                            break;
+                        case pieceType::Queen: 
+                            std::cout << "q ";
+                            break;
+                        default:
+                            std::cout << "err";
+                    }
+                }
+            }
+        }
+        std::cout << std::endl;
+    }
 }
