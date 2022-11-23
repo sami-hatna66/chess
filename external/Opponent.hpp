@@ -10,10 +10,10 @@ std::vector<std::array<int, 4>> getAiMoves(std::shared_ptr<Game> game, pieceColo
 
 void opponentTurn(std::shared_ptr<Game> game);
 
-int miniMax(int depth, std::shared_ptr<Game> game, bool isMaximising, int alpha, int beta);
+float miniMax(int depth, std::shared_ptr<Game> game, bool isMaximising, float alpha, float beta);
 
-int evaluateBoard(std::shared_ptr<Game> game, std::shared_ptr<Board> board);
+float evaluateBoard(std::shared_ptr<Game> game, std::shared_ptr<Board> board);
 
-int ratePiece(pieceColor color, pieceType type);
+float ratePiece(pieceColor color, pieceType type, int row, int col);
 
 #endif
